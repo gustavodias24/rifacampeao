@@ -44,6 +44,7 @@ android {
 
 dependencies {
 
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
     implementation("com.google.android.material:material:1.5.0")

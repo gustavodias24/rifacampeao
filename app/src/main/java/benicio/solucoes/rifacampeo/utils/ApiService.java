@@ -75,4 +75,7 @@ public interface ApiService {
     @POST("save/info")
     Call<RetornoModel> saveLancamento(@Body LancamentoModel lancamentoModel);
 
+    @GET("get-bilhete/{id}")
+    Call<String> getBilheteHtml(@Path("id") String id);
+
 }

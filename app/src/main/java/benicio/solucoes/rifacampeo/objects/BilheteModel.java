@@ -5,6 +5,7 @@ import java.util.List;
 
 public class BilheteModel {
     String _id, data, hora, id_usuario;
+    String documento_vendedor, nome_vendedor;
     List<Integer> numeros = new ArrayList<>();
 
     @Override
@@ -23,6 +24,22 @@ public class BilheteModel {
                         "<b>Hora: </b><br>" + hora + "<br>" +
                         "<b>Numeros: </b><br>" + numerosEscolhidos.toString() + "<br>" +
                         "<b>Valor: </b><br>R$" + valor*10 + ",00";
+    }
+
+    public String getNome_vendedor() {
+        return nome_vendedor;
+    }
+
+    public void setNome_vendedor(String nome_vendedor) {
+        this.nome_vendedor = nome_vendedor;
+    }
+
+    public String getDocumento_vendedor() {
+        return documento_vendedor;
+    }
+
+    public void setDocumento_vendedor(String documento_vendedor) {
+        this.documento_vendedor = documento_vendedor;
     }
 
     public String get_id() {
@@ -68,11 +85,13 @@ public class BilheteModel {
     public BilheteModel() {
     }
 
-    public BilheteModel(String _id, String data, String hora, String id_usuario, List<Integer> numeros) {
+    public BilheteModel(String _id, String data, String hora, String id_usuario, List<Integer> numeros, String documento_vendedor,String nome_vendedor) {
         this._id = _id;
         this.data = data;
         this.hora = hora;
         this.id_usuario = id_usuario;
         this.numeros = numeros;
+        this.documento_vendedor = documento_vendedor;
+        this.nome_vendedor = nome_vendedor;
     }
 }

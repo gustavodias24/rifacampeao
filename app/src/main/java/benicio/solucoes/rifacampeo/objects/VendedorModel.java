@@ -2,13 +2,15 @@ package benicio.solucoes.rifacampeo.objects;
 
 public class VendedorModel {
 
-    String numeroCelular, nome, _id, senha, despesas, idSmartphone = "";
+    String numeroCelular, nome, _id, senha, despesas, idSmartphone = "", documento = "";
     int comissao;
     boolean ativado = true;
 
     float recebimento = 0.0f, pagamento = 0.0f;
 
     int info = 1;
+
+
     public VendedorModel() {
     }
 
@@ -25,7 +27,7 @@ public class VendedorModel {
             // + "<b>ID: <b>"+ idSmartphone + "<br>" ;
     }
 
-    public VendedorModel(String numeroCelular, String nome, String id, String senha, String despesas, String idSmartphone, int comissao, boolean ativado) {
+    public VendedorModel(String numeroCelular, String nome, String id, String senha, String despesas, String idSmartphone, int comissao, boolean ativado, String documento) {
         this.numeroCelular = numeroCelular;
         this.nome = nome;
         this._id = id;
@@ -34,7 +36,17 @@ public class VendedorModel {
         this.idSmartphone = idSmartphone;
         this.comissao = comissao;
         this.ativado = ativado;
+        this.documento = documento;
     }
+
+    public String getDocumento() {
+        return documento;
+    }
+
+    public void setDocumento(String documento) {
+        this.documento = documento;
+    }
+
 
     public float getPagamento() {
         return pagamento;

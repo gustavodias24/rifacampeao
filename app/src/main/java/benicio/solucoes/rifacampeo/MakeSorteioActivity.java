@@ -63,6 +63,10 @@ public class MakeSorteioActivity extends AppCompatActivity {
             } else {
                 BilheteModel novoBilhete = new BilheteModel();
                 novoBilhete.setData(dataFormatada);
+
+                novoBilhete.setDocumento_vendedor(sharedPreferences.getString("documento", ""));
+                novoBilhete.setNome_vendedor(sharedPreferences.getString("nome", ""));
+
                 novoBilhete.setHora(horaFormatada);
                 novoBilhete.setId_usuario(sharedPreferences.getString("id_vendedor", ""));
                 for (String numeroString : numeros) {
@@ -77,6 +81,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
                                 Toast.makeText(MakeSorteioActivity.this, "Bilhete Salvo", Toast.LENGTH_SHORT).show();
                                 Intent i = new Intent(MakeSorteioActivity.this, QRCodeActivity.class);
                                 i.putExtra("linkqr", "http://147.79.83.218:5002/download-bilhete/" + response.body().getMsg());
+                                i.putExtra("numero", response.body().getMsg());
                                 startActivity(i);
                                 finish();
                             } else {
@@ -93,6 +98,8 @@ public class MakeSorteioActivity extends AppCompatActivity {
                     }
                 });
             }
+
+            valorTotalBilhete = 0;
         });
 
         et1 = findViewById(R.id.et11);
@@ -133,11 +140,11 @@ public class MakeSorteioActivity extends AppCompatActivity {
         });
 
         makeSorteioBinding.imageView8.setOnClickListener(v -> {
-            int n1 = new Random().nextInt(9);
-            int n2 = new Random().nextInt(9);
-            int n3 = new Random().nextInt(9);
-            int n4 = new Random().nextInt(9);
-            int n5 = new Random().nextInt(9);
+            int n1 = new Random().nextInt(10) + 1;
+            int n2 = new Random().nextInt(10);
+            int n3 = new Random().nextInt(10);
+            int n4 = new Random().nextInt(10);
+            int n5 = new Random().nextInt(10);
 
             et1.setText(n1 + "");
             et2.setText(n2 + "");

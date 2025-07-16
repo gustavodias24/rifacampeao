@@ -4,6 +4,16 @@ public class ResponseSimple {
     boolean success;
     String msg;
 
+    VendedorModel vendedor = new VendedorModel();
+
+
+    public VendedorModel getVendedor() {
+        return vendedor;
+    }
+
+    public void setVendedor(VendedorModel vendedor) {
+        this.vendedor = vendedor;
+    }
 
     public String getMsg() {
         return msg;

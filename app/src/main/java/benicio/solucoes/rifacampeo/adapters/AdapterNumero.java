@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +38,7 @@ public class AdapterNumero extends RecyclerView.Adapter<AdapterNumero.MyViewHold
         holder.numero.setText(numeros.get(position));
 
         holder.itemView.setOnClickListener(v -> {
+            Toast.makeText(a, "Número "+numeros.get(position)+" removido", Toast.LENGTH_SHORT).show();
             numeros.remove(position);
             notifyDataSetChanged();
             MakeSorteioActivity.atualizarPrecoBilhete(0);

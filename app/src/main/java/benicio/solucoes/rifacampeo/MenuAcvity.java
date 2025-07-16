@@ -113,7 +113,9 @@ public class MenuAcvity extends AppCompatActivity {
                     if (response.isSuccessful()) {
                         if (response.body().isSuccess()) {
 
-                            editor.putString("id_vendedor", response.body().getMsg()).apply();
+                            editor.putString("id_vendedor", response.body().getVendedor().get_id()).apply();
+                            editor.putString("nome", response.body().getVendedor().getNome()).apply();
+                            editor.putString("documento", response.body().getVendedor().getDocumento()).apply();
 
                             startActivity(new Intent(MenuAcvity.this, PremioActivity.class));
                         } else {

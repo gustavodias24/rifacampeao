@@ -142,6 +142,7 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
             LayoutInputVendedorBinding inputVendedorBinding = LayoutInputVendedorBinding.inflate(a.getLayoutInflater());
 
             inputVendedorBinding.edtNome.setText(lista.get(position).getNome());
+            inputVendedorBinding.edtDocumento.setText(lista.get(position).getDocumento());
             inputVendedorBinding.edtCelular.setText(lista.get(position).getNumeroCelular());
             inputVendedorBinding.edtDespesas.setText(lista.get(position).getDespesas());
             inputVendedorBinding.edtSenha.setText(lista.get(position).getSenha());
@@ -160,7 +161,8 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
                         inputVendedorBinding.edtDespesas.getText().toString(),
                         "",
                         Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ? inputVendedorBinding.edtComissao.getText().toString() : "0"),
-                        inputVendedorBinding.radioAtivo.isChecked()
+                        inputVendedorBinding.radioAtivo.isChecked(),
+                        inputVendedorBinding.edtDocumento.getText().toString()
                 );
 
                 if (inputVendedorBinding.edtComissao.getText().toString().isEmpty()) {

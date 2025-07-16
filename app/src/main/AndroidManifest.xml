@@ -24,6 +24,7 @@
             android:name=".RelatoriosActivity"
             android:exported="false" />
         <activity
+            android:screenOrientation="portrait"
             android:name=".QRCodeActivity"
             android:exported="false" />
         <activity

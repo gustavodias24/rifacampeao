@@ -104,7 +104,8 @@ public class VendedoresActivity extends AppCompatActivity {
                             inputVendedorBinding.edtDespesas.getText().toString(),
                             "",
                             Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ? inputVendedorBinding.edtComissao.getText().toString() : "0"),
-                            inputVendedorBinding.radioAtivo.isChecked()
+                            inputVendedorBinding.radioAtivo.isChecked(),
+                            inputVendedorBinding.edtComissao.getText().toString()
                     )).enqueue(new Callback<RetornoModel>() {
                         @Override
                         public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
