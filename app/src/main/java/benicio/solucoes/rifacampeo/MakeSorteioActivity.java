@@ -1,6 +1,7 @@
 package benicio.solucoes.rifacampeo;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -50,6 +52,15 @@ public class MakeSorteioActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences("info", MODE_PRIVATE);
 
         makeSorteioBinding.finalizarBilhete.setOnClickListener(v -> {
+
+            Dialog loading_d;
+            AlertDialog.Builder loading_b = new AlertDialog.Builder(this);
+            loading_b.setTitle("Aguarde!");
+            loading_b.setMessage("Carregando...");
+            loading_b.setCancelable(false);
+            loading_d = loading_b.create();
+            loading_d.show();
+
             // Data atual
             LocalDate dataAtual = LocalDate.now();
             String dataFormatada = dataAtual.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -60,6 +71,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
 
             if (numeros.isEmpty()) {
                 Toast.makeText(this, "Você não escolheu nenhum número!", Toast.LENGTH_SHORT).show();
+                loading_d.dismiss();
             } else {
                 BilheteModel novoBilhete = new BilheteModel();
                 novoBilhete.setData(dataFormatada);
@@ -83,18 +95,21 @@ public class MakeSorteioActivity extends AppCompatActivity {
                                 i.putExtra("linkqr", "http://147.79.83.218:5002/download-bilhete/" + response.body().getMsg());
                                 i.putExtra("numero", response.body().getMsg());
                                 startActivity(i);
+                                loading_d.dismiss();
                                 finish();
                             } else {
+                                loading_d.dismiss();
                                 Toast.makeText(MakeSorteioActivity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();
                             }
                         } else {
+                            loading_d.dismiss();
                             Toast.makeText(MakeSorteioActivity.this, "Problema de conexão!", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<SaveBilheteResponse> call, Throwable throwable) {
-
+                        loading_d.dismiss();
                     }
                 });
             }
@@ -139,6 +154,8 @@ public class MakeSorteioActivity extends AppCompatActivity {
             //et5.setText("");
         });
 
+
+
         makeSorteioBinding.imageView8.setOnClickListener(v -> {
             int n1 = new Random().nextInt(10) + 1;
             int n2 = new Random().nextInt(10);
@@ -150,13 +167,14 @@ public class MakeSorteioActivity extends AppCompatActivity {
             et2.setText(n2 + "");
             et3.setText(n3 + "");
             et4.setText(n4 + "");
+            addNumero();
             //et5.setText(n5 + "");
         });
 
         RecyclerView recyclerView = makeSorteioBinding.rvNumeros;
 
         // Cria o GridLayoutManager com 5 colunas
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 5);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(layoutManager);
 
         // Defina seu adapter aqui
@@ -164,32 +182,56 @@ public class MakeSorteioActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapterNumero);
         recyclerView.setHasFixedSize(true);
 
-        makeSorteioBinding.addNumero.setOnClickListener(v -> {
-            String code = et1.getText().toString()
-                    + et2.getText().toString()
-                    + et3.getText().toString()
-                    + et4.getText().toString();
-                    //+ et5.getText().toString();
 
-            if (code.length() == 4) {
-                if (numeros.size() < 10) {
-                    numeros.add(code);
-                    adapterNumero.notifyDataSetChanged();
-
-                    atualizarPrecoBilhete(1);
-                    et1.setText("");
-                    et2.setText("");
-                    et3.setText("");
-                    et4.setText("");
-                    //et5.setText("");
-                } else {
-                    Toast.makeText(this, "No máximo 10 números ", Toast.LENGTH_SHORT).show();
-                }
-
-
+        makeSorteioBinding.et44.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (
+                        !makeSorteioBinding.et11.getText().toString().isEmpty() &&
+                        !makeSorteioBinding.et22.getText().toString().isEmpty() &&
+                        !makeSorteioBinding.et33.getText().toString().isEmpty() &&
+                        !makeSorteioBinding.et44.getText().toString().isEmpty()
+                ) {
+                    addNumero();
+                    makeSorteioBinding.et11.requestFocus();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
         });
+    }
+
+    public void addNumero() {
+        String code = et1.getText().toString()
+                + et2.getText().toString()
+                + et3.getText().toString()
+                + et4.getText().toString();
+        //+ et5.getText().toString();
+
+        if (code.length() == 4) {
+            if (numeros.size() < 6) {
+                numeros.add(code);
+                adapterNumero.notifyDataSetChanged();
+
+                atualizarPrecoBilhete(1);
+                et1.setText("");
+                et2.setText("");
+                et3.setText("");
+                et4.setText("");
+                //et5.setText("");
+            } else {
+                Toast.makeText(this, "No máximo 6 números ", Toast.LENGTH_SHORT).show();
+            }
+
+
+        }
+
     }
 
     public static void atualizarPrecoBilhete(int addOrRemove) {
