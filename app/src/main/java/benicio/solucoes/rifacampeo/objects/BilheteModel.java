@@ -8,6 +8,9 @@ public class BilheteModel {
     String documento_vendedor, nome_vendedor;
     List<Integer> numeros = new ArrayList<>();
 
+    // usado para checar se o número do bilhete for repetido
+    String numero;
+
     @Override
     public String toString() {
 
@@ -24,6 +27,18 @@ public class BilheteModel {
                         "<b>Hora: </b><br>" + hora + "<br>" +
                         "<b>Numeros: </b><br>" + numerosEscolhidos.toString() + "<br>" +
                         "<b>Valor: </b><br>R$" + valor*10 + ",00";
+    }
+
+    public BilheteModel(String numero) {
+        this.numero = numero;
+    }
+
+    public String getNumero() {
+        return numero;
+    }
+
+    public void setNumero(String numero) {
+        this.numero = numero;
     }
 
     public String getNome_vendedor() {

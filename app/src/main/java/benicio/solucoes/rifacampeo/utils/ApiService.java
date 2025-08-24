@@ -66,6 +66,9 @@ public interface ApiService {
     @POST("salvar-bilhete")
     Call<SaveBilheteResponse> saveBilhete(@Body BilheteModel bilheteModel);
 
+    @POST("check-number")
+    Call<SaveBilheteResponse> checkNumber(@Body BilheteModel bilheteModel);
+
     @POST("return/info/{info}")
     Call<List<BilheteModel>> returnBilhetes(@Path("info") int info, @Body QueryModelEmpty queryModelEmpty);
 

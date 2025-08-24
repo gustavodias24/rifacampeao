@@ -34,6 +34,7 @@ import retrofit2.Response;
 
 public class MakeSorteioActivity extends AppCompatActivity {
 
+    private boolean inFlight = false;
     public static int valorTotalBilhete = 0;
     private SharedPreferences sharedPreferences;
     EditText et1, et2, et3, et4;//, et5;
@@ -155,7 +156,6 @@ public class MakeSorteioActivity extends AppCompatActivity {
         });
 
 
-
         makeSorteioBinding.imageView8.setOnClickListener(v -> {
             int n1 = new Random().nextInt(10) + 1;
             int n2 = new Random().nextInt(10);
@@ -192,9 +192,9 @@ public class MakeSorteioActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (
                         !makeSorteioBinding.et11.getText().toString().isEmpty() &&
-                        !makeSorteioBinding.et22.getText().toString().isEmpty() &&
-                        !makeSorteioBinding.et33.getText().toString().isEmpty() &&
-                        !makeSorteioBinding.et44.getText().toString().isEmpty()
+                                !makeSorteioBinding.et22.getText().toString().isEmpty() &&
+                                !makeSorteioBinding.et33.getText().toString().isEmpty() &&
+                                !makeSorteioBinding.et44.getText().toString().isEmpty()
                 ) {
                     addNumero();
                     makeSorteioBinding.et11.requestFocus();
@@ -208,6 +208,10 @@ public class MakeSorteioActivity extends AppCompatActivity {
     }
 
     public void addNumero() {
+
+        if (inFlight) return;
+
+        inFlight = true;
         String code = et1.getText().toString()
                 + et2.getText().toString()
                 + et3.getText().toString()
@@ -216,20 +220,56 @@ public class MakeSorteioActivity extends AppCompatActivity {
 
         if (code.length() == 4) {
             if (numeros.size() < 6) {
-                numeros.add(code);
-                adapterNumero.notifyDataSetChanged();
 
-                atualizarPrecoBilhete(1);
-                et1.setText("");
-                et2.setText("");
-                et3.setText("");
-                et4.setText("");
-                //et5.setText("");
+                Dialog loading_d;
+                AlertDialog.Builder loading_b = new AlertDialog.Builder(this);
+                loading_b.setTitle("Aguarde!");
+                loading_b.setMessage("Carregando...");
+                loading_b.setCancelable(false);
+                loading_d = loading_b.create();
+                loading_d.show();
+
+                RetrofitUtils.getApiService().checkNumber(new BilheteModel(code)).enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(Call<SaveBilheteResponse> call, Response<SaveBilheteResponse> response) {
+
+                        et1.setText("");
+                        et2.setText("");
+                        et3.setText("");
+                        et4.setText("");
+                        //et5.setText("");
+
+                        if (response.isSuccessful()) {
+                            if (!response.body().isSuccess()) {
+                                Toast.makeText(MakeSorteioActivity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();
+                            } else {
+                                numeros.add(code);
+                                adapterNumero.notifyDataSetChanged();
+
+                                atualizarPrecoBilhete(1);
+
+                                Toast.makeText(MakeSorteioActivity.this, "Número adicionado!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        loading_d.dismiss();
+                        inFlight = false;
+                    }
+
+                    @Override
+                    public void onFailure(Call<SaveBilheteResponse> call, Throwable throwable) {
+                        Toast.makeText(MakeSorteioActivity.this, throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                        loading_d.dismiss();
+                        inFlight = false;
+                    }
+                });
+
             } else {
                 Toast.makeText(this, "No máximo 6 números ", Toast.LENGTH_SHORT).show();
+                inFlight = false;
             }
-
-
+        } else {
+            inFlight = false;
         }
 
     }
@@ -268,7 +308,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
                 + et2.getText().toString()
                 + et3.getText().toString()
                 + et4.getText().toString();
-                //+ et5.getText().toString();
+        //+ et5.getText().toString();
 
     }
 }
