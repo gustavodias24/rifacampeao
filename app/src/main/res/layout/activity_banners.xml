@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     android:padding="8dp"
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -10,14 +10,27 @@
     android:layout_height="match_parent"
     tools:context=".BannersActivity">
 
-    <Button
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btenviarbanner"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
+
         android:layout_height="wrap_content"
-        android:text="Enivar Novo Banner" />
+        android:layout_marginBottom="64dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/lancar_milha"
+        android:text="Enivar Novo Banner"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvbanners"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:layout_marginTop="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+</androidx.constraintlayout.widget.ConstraintLayout>

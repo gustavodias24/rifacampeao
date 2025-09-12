@@ -5,7 +5,7 @@ import java.util.List;
 
 public class BilheteModel {
     String _id, data, hora, id_usuario;
-    String documento_vendedor, nome_vendedor;
+    String documento_vendedor, nome_vendedor; // esse valor é só de exibicao
     List<Integer> numeros = new ArrayList<>();
 
     // usado para checar se o número do bilhete for repetido

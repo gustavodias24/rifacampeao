@@ -7,9 +7,6 @@ import android.os.Bundle;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,7 +17,6 @@ import java.util.List;
 
 import benicio.solucoes.rifacampeo.adapters.AdapterBilhetes;
 import benicio.solucoes.rifacampeo.databinding.ActivityAdminMasterBinding;
-import benicio.solucoes.rifacampeo.databinding.ActivityMenuAcvityBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
 import benicio.solucoes.rifacampeo.utils.RetrofitUtils;
@@ -48,6 +44,7 @@ public class AdminMasterActivity extends AppCompatActivity {
         mainBinding.cadastrarvendedores.setOnClickListener(v -> startActivity(new Intent(this, VendedoresActivity.class)));
         mainBinding.CadastrarRegiao.setOnClickListener(v -> startActivity(new Intent(this, RegioesActivity.class)));
         mainBinding.button3.setOnClickListener(v -> startActivity(new Intent(this, RelatoriosActivity.class)));
+        mainBinding.button2.setOnClickListener(v -> startActivity(new Intent(this, ResultadoActivity.class)));
 
         rv = mainBinding.rvBilhetes;
         rv.setLayoutManager(new LinearLayoutManager(this));

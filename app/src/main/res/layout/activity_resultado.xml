@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/marrom"
+        tools:context=".MakeSorteioActivity">
+
+        <LinearLayout
+            android:id="@+id/linearLayout4"
+            android:layout_width="wrap_content"
+            android:layout_height="66dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="64dp"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- 5 campos para código -->
+            <EditText
+                android:id="@+id/e1"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e2"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e3"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e4"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout5"
+            android:layout_width="wrap_content"
+            android:layout_height="66dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
+
+            <!-- 5 campos para código -->
+            <EditText
+                android:id="@+id/e12"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e22"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e32"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e42"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout6"
+            android:layout_width="wrap_content"
+            android:layout_height="66dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout5">
+
+            <!-- 5 campos para código -->
+            <EditText
+                android:id="@+id/e13"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e23"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e33"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e43"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout7"
+            android:layout_width="wrap_content"
+            android:layout_height="66dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout6">
+
+            <!-- 5 campos para código -->
+            <EditText
+                android:id="@+id/e14"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e24"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e34"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e44"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout8"
+            android:layout_width="wrap_content"
+            android:layout_height="66dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout7">
+
+            <!-- 5 campos para código -->
+            <EditText
+                android:id="@+id/e15"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e25"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e35"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e45"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout9"
+            android:layout_width="wrap_content"
+            android:layout_height="66dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout8">
+
+            <!-- 5 campos para código -->
+            <EditText
+                android:id="@+id/e16"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e26"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e36"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/e46"
+                android:layout_width="90dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/input_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Resetar sorteio"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button5" />
+
+        <Button
+            android:id="@+id/button5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Lançar números"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout9" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="96dp"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button4">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/sorteio1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="..." />
+
+                <Button
+                    android:id="@+id/sorteio2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="..." />
+
+                <Button
+                    android:id="@+id/sorteio3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="..." />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/sorteio4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="..." />
+
+                <Button
+                    android:id="@+id/sorteio5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="..." />
+
+                <Button
+                    android:id="@+id/sorteio6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="..." />
+            </LinearLayout>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

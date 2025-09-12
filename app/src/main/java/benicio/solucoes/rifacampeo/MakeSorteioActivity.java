@@ -243,11 +243,13 @@ public class MakeSorteioActivity extends AppCompatActivity {
                             if (!response.body().isSuccess()) {
                                 Toast.makeText(MakeSorteioActivity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();
                             } else {
-                                numeros.add(code);
-                                adapterNumero.notifyDataSetChanged();
-
-                                atualizarPrecoBilhete(1);
-
+                                if ( !numeros.contains(code)){
+                                    numeros.add(code);
+                                    adapterNumero.notifyDataSetChanged();
+                                    atualizarPrecoBilhete(1);
+                                }else{
+                                    Toast.makeText(MakeSorteioActivity.this, "Você já inseriu esse número!", Toast.LENGTH_SHORT).show();
+                                }
                                 Toast.makeText(MakeSorteioActivity.this, "Número adicionado!", Toast.LENGTH_SHORT).show();
                             }
                         }

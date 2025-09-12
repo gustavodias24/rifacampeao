@@ -6,10 +6,12 @@ import benicio.solucoes.rifacampeo.RegioesActivity;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.DateLimitModel;
 import benicio.solucoes.rifacampeo.objects.LancamentoModel;
+import benicio.solucoes.rifacampeo.objects.NumerosPremiadosModel;
 import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
 import benicio.solucoes.rifacampeo.objects.QueryModelVendedorID;
 import benicio.solucoes.rifacampeo.objects.RegiaoModel;
 import benicio.solucoes.rifacampeo.objects.ResponseSimple;
+import benicio.solucoes.rifacampeo.objects.ResultadoBilheteModel;
 import benicio.solucoes.rifacampeo.objects.RetornoModel;
 import benicio.solucoes.rifacampeo.objects.SaveBilheteResponse;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
@@ -80,5 +82,8 @@ public interface ApiService {
 
     @GET("get-bilhete/{id}")
     Call<String> getBilheteHtml(@Path("id") String id);
+
+    @POST("bilhetes-ganharadores")
+    Call<ResultadoBilheteModel> bilhetes_ganharadores(@Body NumerosPremiadosModel numerosPremiadosModel);
 
 }
