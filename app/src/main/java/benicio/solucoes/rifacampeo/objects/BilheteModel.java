@@ -10,6 +10,7 @@ public class BilheteModel {
 
     // usado para checar se o número do bilhete for repetido
     String numero;
+    String loteria;
 
     @Override
     public String toString() {
@@ -31,6 +32,14 @@ public class BilheteModel {
 
     public BilheteModel(String numero) {
         this.numero = numero;
+    }
+
+    public String getLoteria() {
+        return loteria;
+    }
+
+    public void setLoteria(String loteria) {
+        this.loteria = loteria;
     }
 
     public String getNumero() {

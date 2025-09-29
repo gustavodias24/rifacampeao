@@ -1,20 +1,33 @@
 package benicio.solucoes.rifacampeo.objects;
 
-public class NumerosPremiadosModel {
-    int numero1, numero2, numero3, numero4, numero5,numero6;
-    String data_lancada, loteria;
+public class GanhadorModel {
+    String data_lancada, loteria, _id;
+    int numero1, numero2, numero3, numero4, numero5, numero6;
 
-    public NumerosPremiadosModel() {
+    public GanhadorModel() {
     }
 
-    public NumerosPremiadosModel(int numero1, int numero2, int numero3, int numero4, int numero5, int numero6, String data_lancada, String loteria) {
-        this.numero1 = numero1;
-        this.numero2 = numero2;
-        this.numero3 = numero3;
-        this.numero4 = numero4;
-        this.numero5 = numero5;
-        this.numero6 = numero6;
+    public String getData_lancada() {
+        return data_lancada;
+    }
+
+    public void setData_lancada(String data_lancada) {
         this.data_lancada = data_lancada;
+    }
+
+    public String getLoteria() {
+        return loteria;
+    }
+
+    public String get_id() {
+        return _id;
+    }
+
+    public void set_id(String _id) {
+        this._id = _id;
+    }
+
+    public void setLoteria(String loteria) {
         this.loteria = loteria;
     }
 

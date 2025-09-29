@@ -1,20 +1,25 @@
 package benicio.solucoes.rifacampeo.objects;
 
 public class DateLimitModel {
-    String datalimite;
+    String dataHoraFD;
+    String dataHoraCOR;
 
     public DateLimitModel() {
     }
 
-    public DateLimitModel(String datalimite) {
-        this.datalimite = datalimite;
+    public String getDataHoraFD() {
+        return dataHoraFD;
     }
 
-    public String getDatalimite() {
-        return datalimite;
+    public void setDataHoraFD(String dataHoraFD) {
+        this.dataHoraFD = dataHoraFD;
     }
 
-    public void setDatalimite(String datalimite) {
-        this.datalimite = datalimite;
+    public String getDataHoraCOR() {
+        return dataHoraCOR;
+    }
+
+    public void setDataHoraCOR(String dataHoraCOR) {
+        this.dataHoraCOR = dataHoraCOR;
     }
 }

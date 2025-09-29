@@ -2,23 +2,20 @@ package benicio.solucoes.rifacampeo;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.widget.DatePicker;
-import android.widget.TimePicker;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import benicio.solucoes.rifacampeo.databinding.ActivityAdminMasterBinding;
 import benicio.solucoes.rifacampeo.databinding.ActivityLancarDataLimiteBinding;
 import benicio.solucoes.rifacampeo.objects.DateLimitModel;
 import benicio.solucoes.rifacampeo.utils.RetrofitUtils;
@@ -30,10 +27,7 @@ import retrofit2.Response;
 public class LancarDataLimiteActivity extends AppCompatActivity {
 
     private ActivityLancarDataLimiteBinding mainBinding;
-
-    private DatePicker datePicker;
-    private TimePicker timePicker;
-
+    private EditText editTextDateFD, editTextTimeFD, editTextDateCOR, editTextTimeCOR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +37,30 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
+        editTextDateFD = findViewById(R.id.editTextDateFD);
+        editTextTimeFD = findViewById(R.id.editTextTimeFD);
+        editTextDateCOR = findViewById(R.id.editTextDateCOR);
+        editTextTimeCOR = findViewById(R.id.editTextTimeCOR);
+
+        // Máscaras
+        applyMask(editTextDateFD, "##/##/####");
+        applyMask(editTextDateCOR, "##/##/####");
+        applyMask(editTextTimeFD, "##:##");
+        applyMask(editTextTimeCOR, "##:##");
+
 
         RetrofitUtils.getApiService().returnDataLimite().enqueue(new Callback<DateLimitModel>() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onResponse(Call<DateLimitModel> call, Response<DateLimitModel> response) {
                 if (response.isSuccessful()) {
-                    assert response.body() != null;
-                    mainBinding.datahoraatual.setText("Data e Hora atual:  " + response.body().getDatalimite());
+
+
+                    editTextDateFD.setText(response.body().getDataHoraFD().split(" ")[0]);
+                    editTextDateCOR.setText(response.body().getDataHoraCOR().split(" ")[0]);
+
+                    editTextTimeFD.setText(response.body().getDataHoraFD().split(" ")[1]);
+                    editTextTimeCOR.setText(response.body().getDataHoraCOR().split(" ")[1]);
                 } else {
                     Toast.makeText(LancarDataLimiteActivity.this, "Problema de Conexão", Toast.LENGTH_SHORT).show();
                 }
@@ -62,32 +72,30 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
             }
         });
 
-        datePicker = findViewById(R.id.datePicker);
-        timePicker = findViewById(R.id.timePicker);
 
-        timePicker.setIs24HourView(false); // Usa formato AM/PM
 
-        mainBinding.novadatahora.setOnClickListener(v -> {
-            int day = datePicker.getDayOfMonth();
-            int month = datePicker.getMonth(); // começa em 0!
-            int year = datePicker.getYear();
+        mainBinding.button6.setOnClickListener(v -> {
 
-            int hour = timePicker.getHour();
-            int minute = timePicker.getMinute();
+            DateLimitModel dateLimitModel = new DateLimitModel();
+            dateLimitModel.setDataHoraCOR(editTextDateCOR.getText().toString() + " " + editTextTimeCOR.getText().toString());
+            dateLimitModel.setDataHoraFD(editTextDateFD.getText().toString() + " " + editTextTimeFD.getText().toString());
 
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(year, month, day, hour, minute);
 
-            // Formatando: dd-MM-yyyy hh:mm
-            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm", Locale.getDefault());
-            String dataHoraFormatada = sdf.format(calendar.getTime());
+            if (    editTextDateFD.getText().toString().isEmpty() ||
+                    editTextTimeFD.getText().toString().isEmpty() ||
+                    editTextDateCOR.getText().toString().isEmpty() ||
+                    editTextTimeCOR.getText().toString().isEmpty()
 
-            RetrofitUtils.getApiService().setarDataLimite(new DateLimitModel(dataHoraFormatada)).enqueue(new Callback<ResponseBody>() {
+            ){
+                Toast.makeText(this, "Preencha TODAS as informações", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            RetrofitUtils.getApiService().setarDataLimite(dateLimitModel).enqueue(new Callback<>() {
                 @SuppressLint("SetTextI18n")
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.isSuccessful()) {
-                        mainBinding.datahoraatual.setText("Data e Hora atual:  " + dataHoraFormatada);
                         Toast.makeText(LancarDataLimiteActivity.this, "Data e Hora Salvos", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(LancarDataLimiteActivity.this, "Problema de Conexão", Toast.LENGTH_SHORT).show();
@@ -99,6 +107,48 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
 
                 }
             });
+        });
+
+    }
+
+    private void applyMask(EditText editText, final String mask) {
+        editText.addTextChangedListener(new TextWatcher() {
+            boolean isUpdating;
+            String old = "";
+
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String digits = s.toString().replaceAll("[^\\d]", "");
+                StringBuilder out = new StringBuilder();
+
+                if (isUpdating) {
+                    old = digits;
+                    isUpdating = false;
+                    return;
+                }
+
+                int i = 0;
+                for (char m : mask.toCharArray()) {
+                    if (m != '#') {
+                        out.append(m);
+                        continue;
+                    }
+                    if (i < digits.length()) {
+                        out.append(digits.charAt(i));
+                        i++;
+                    } else {
+                        break;
+                    }
+                }
+
+                isUpdating = true;
+                editText.setText(out.toString());
+                editText.setSelection(out.length());
+            }
+
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 }

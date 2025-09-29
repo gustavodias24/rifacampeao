@@ -5,6 +5,7 @@ import java.util.List;
 import benicio.solucoes.rifacampeo.RegioesActivity;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.DateLimitModel;
+import benicio.solucoes.rifacampeo.objects.GanhadorModel;
 import benicio.solucoes.rifacampeo.objects.LancamentoModel;
 import benicio.solucoes.rifacampeo.objects.NumerosPremiadosModel;
 import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
@@ -19,6 +20,7 @@ import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -85,5 +87,11 @@ public interface ApiService {
 
     @POST("bilhetes-ganharadores")
     Call<ResultadoBilheteModel> bilhetes_ganharadores(@Body NumerosPremiadosModel numerosPremiadosModel);
+
+    @GET("ganhadores")
+    Call<List<GanhadorModel>> ganhadores();
+
+    @DELETE("/ganhadores/{id}")
+    Call<RetornoModel> ganhador_delete(@Path("id") String _id);
 
 }

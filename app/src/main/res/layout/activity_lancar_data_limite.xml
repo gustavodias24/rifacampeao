@@ -16,49 +16,57 @@
         tools:context=".LancarDataLimiteActivity">
 
         <TextView
-            android:id="@+id/datahoraatual"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="64dp"
-            android:layout_marginBottom="8dp"
-            android:text="Data e Hora atual:  carregando.."
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:text="Data e hora limite FD" />
 
+        <EditText
+            android:id="@+id/editTextDateFD"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="date" />
+
+        <EditText
+            android:id="@+id/editTextTimeFD"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="time" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1.5dp"
+            android:layout_marginTop="24dp"
+            android:background="?android:attr/listDivider" />
 
         <TextView
-            android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Selecione a Nova Data Limite" />
+            android:text="Data e hora limite COR" />
 
-        <DatePicker
-            android:id="@+id/datePicker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
-
-        <TextView
-            android:id="@+id/textView2"
+        <EditText
+            android:id="@+id/editTextDateCOR"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Selecione a Nova Hora Limite" />
+            android:ems="10"
+            android:inputType="date" />
 
-        <TimePicker
-            android:id="@+id/timePicker"
+        <EditText
+            android:id="@+id/editTextTimeCOR"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:timePickerMode="spinner" />
+            android:ems="10"
+            android:inputType="time" />
 
         <Button
-            android:id="@+id/novadatahora"
+            android:id="@+id/button6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="64dp"
-            android:text="Setar Nova Data" />
-
+            android:layout_marginTop="24dp"
+            android:text="Salvar" />
     </LinearLayout>
 
 </ScrollView>

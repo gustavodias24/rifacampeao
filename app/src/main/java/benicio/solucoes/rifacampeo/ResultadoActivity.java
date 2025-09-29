@@ -17,6 +17,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import benicio.solucoes.rifacampeo.databinding.ActivityResultadoBinding;
 import benicio.solucoes.rifacampeo.objects.NumerosPremiadosModel;
 import benicio.solucoes.rifacampeo.objects.ResultadoBilheteModel;
@@ -30,6 +34,8 @@ import retrofit2.Response;
 public class ResultadoActivity extends AppCompatActivity {
 
     Dialog dialogCarreando;
+
+    String dataAtual = "";
 
     int nu1, nu2, nu3, nu4, nu5, nu6; // Variáveis finais
     EditText e1, e2, e3, e4, e12, e22, e32, e42, e13, e23, e33, e43,
@@ -46,6 +52,13 @@ public class ResultadoActivity extends AppCompatActivity {
         mainBinding = ActivityResultadoBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        // Define o formato desejado
+        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+        // Converte para string formatada
+        dataAtual = formato.format(new Date());
+        mainBinding.textView5.setText(dataAtual);
 
         apiService = RetrofitUtils.getApiService();
 
@@ -133,48 +146,58 @@ public class ResultadoActivity extends AppCompatActivity {
             Log.d("Mayara", "nu4: " + nu4);
             Log.d("Mayara", "nu5: " + nu5);
             Log.d("Mayara", "nu6: " + nu6);
+            
+            int soma = nu1 + nu2 + nu3 + nu4 + nu5;
+            
+            if (soma == nu6){
+                apiService.bilhetes_ganharadores(new NumerosPremiadosModel(nu1, nu2, nu3, nu4, nu5, nu6, dataAtual , mainBinding.radioButtonFB.isChecked() ? "FD" : "COR" )).enqueue(new Callback<ResultadoBilheteModel>() {
+                    @Override
+                    public void onResponse(Call<ResultadoBilheteModel> call, Response<ResultadoBilheteModel> response) {
 
-            apiService.bilhetes_ganharadores(new NumerosPremiadosModel(nu1, nu2, nu3, nu4, nu5, nu6)).enqueue(new Callback<ResultadoBilheteModel>() {
-                @Override
-                public void onResponse(Call<ResultadoBilheteModel> call, Response<ResultadoBilheteModel> response) {
+                        dialogCarreando.dismiss();
 
-                    dialogCarreando.dismiss();
+                        if (response.isSuccessful() && response.body() != null) {
+                            SorteioModel sorteioModel = response.body().getMsg();
 
-                    if (response.isSuccessful() && response.body() != null) {
-                        SorteioModel sorteioModel = response.body().getMsg();
+                            // Referências dos botões
+                            Button btn1 = findViewById(R.id.sorteio1);
+                            Button btn2 = findViewById(R.id.sorteio2);
+                            Button btn3 = findViewById(R.id.sorteio3);
+                            Button btn4 = findViewById(R.id.sorteio4);
+                            Button btn5 = findViewById(R.id.sorteio5);
+                            Button btn6 = findViewById(R.id.sorteio6);
 
-                        // Referências dos botões
-                        Button btn1 = findViewById(R.id.sorteio1);
-                        Button btn2 = findViewById(R.id.sorteio2);
-                        Button btn3 = findViewById(R.id.sorteio3);
-                        Button btn4 = findViewById(R.id.sorteio4);
-                        Button btn5 = findViewById(R.id.sorteio5);
-                        Button btn6 = findViewById(R.id.sorteio6);
+                            // Configura cada botão
+                            configurarBotao(btn1, sorteioModel.getSorteio1());
+                            configurarBotao(btn2, sorteioModel.getSorteio2());
+                            configurarBotao(btn3, sorteioModel.getSorteio3());
+                            configurarBotao(btn4, sorteioModel.getSorteio4());
+                            configurarBotao(btn5, sorteioModel.getSorteio5());
+                            configurarBotao(btn6, sorteioModel.getSorteio6());
+                        } else {
+                            Toast.makeText(ResultadoActivity.this, "Erro na resposta", Toast.LENGTH_SHORT).show();
+                        }
 
-                        // Configura cada botão
-                        configurarBotao(btn1, sorteioModel.getSorteio1());
-                        configurarBotao(btn2, sorteioModel.getSorteio2());
-                        configurarBotao(btn3, sorteioModel.getSorteio3());
-                        configurarBotao(btn4, sorteioModel.getSorteio4());
-                        configurarBotao(btn5, sorteioModel.getSorteio5());
-                        configurarBotao(btn6, sorteioModel.getSorteio6());
-                    } else {
-                        Toast.makeText(ResultadoActivity.this, "Erro na resposta", Toast.LENGTH_SHORT).show();
+
                     }
 
-
-                }
-
-                @Override
-                public void onFailure(Call<ResultadoBilheteModel> call, Throwable throwable) {
-                    dialogCarreando.dismiss();
-                    Toast.makeText(ResultadoActivity.this, throwable.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+                    @Override
+                    public void onFailure(Call<ResultadoBilheteModel> call, Throwable throwable) {
+                        dialogCarreando.dismiss();
+                        Toast.makeText(ResultadoActivity.this, throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }else{
+                dialogCarreando.dismiss();
+                Toast.makeText(this, "Número do 6° prêmio ERRADO!", Toast.LENGTH_SHORT).show();
+            }
 
 
         });
 
+    mainBinding.button4.setOnClickListener(v -> {
+        startActivity(new Intent(this, DatasAnterioresSorteioActivity.class));
+    });
 
     }
 
