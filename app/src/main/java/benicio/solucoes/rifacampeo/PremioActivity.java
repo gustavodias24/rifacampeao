@@ -85,7 +85,7 @@ public class PremioActivity extends AppCompatActivity {
 
             @Override
             public void onClick(int position, CarouselItem carouselItem) {
-                startActivity(new Intent(PremioActivity.this, MakeSorteioActivity.class));
+                startActivity(new Intent(PremioActivity.this, SelectLoteriaActivity.class));
             }
 
             @Override

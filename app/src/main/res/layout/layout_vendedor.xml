@@ -1,28 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp">
 
-    <TextView
-        android:id="@+id/infos_vendedor"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="TextView" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/editar_vendedor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="EDITAR" />
-    <Button
-        android:id="@+id/entrada_saida_vendedor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Pagamento/Recebimento" />
+        <!-- Nome/infos do vendedor -->
+        <TextView
+            android:id="@+id/infos_vendedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Nome do Vendedor"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingBottom="12dp" />
 
-</LinearLayout>
+        <!-- Botões em coluna -->
+        <Button
+            android:id="@+id/editar_vendedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Editar"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/entrada_saida_vendedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pagamento / Recebimento"
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/excluir_vendedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Excluir"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

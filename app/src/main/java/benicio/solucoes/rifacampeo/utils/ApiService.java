@@ -93,5 +93,12 @@ public interface ApiService {
 
     @DELETE("/ganhadores/{id}")
     Call<RetornoModel> ganhador_delete(@Path("id") String _id);
+    @POST("check-date")
+    Call<RetornoModel> check_date(@Body BilheteModel dateLimitModel);
+
+    @GET("delete/vendedor/{id}")
+    Call<RetornoModel> vendedor_delete(@Path("id") String _id);
+
+
 
 }

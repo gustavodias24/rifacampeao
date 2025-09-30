@@ -74,6 +74,30 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
 
+        holder.delete_vendedor.setOnClickListener(v -> {
+            int pos = holder.getAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) return; // posição inválida (ex: item já removido)
+
+            RetrofitUtils.getApiService().vendedor_delete(lista.get(pos).get_id())
+                    .enqueue(new Callback<RetornoModel>() {
+                        @Override
+                        public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(a, "Vendedor deletado", Toast.LENGTH_SHORT).show();
+
+                                lista.remove(pos);
+                                notifyItemRemoved(pos);
+                                notifyItemRangeChanged(pos, lista.size()); // opcional, atualiza posições seguintes
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<RetornoModel> call, Throwable throwable) {
+                            Toast.makeText(a, "Erro ao deletar: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
+
         holder.entrada_saida_vendedor.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(a);
 
@@ -148,7 +172,7 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
             inputVendedorBinding.edtSenha.setText(lista.get(position).getSenha());
             inputVendedorBinding.edtComissao.setText(lista.get(position).getComissao() + "");
             inputVendedorBinding.radioAtivo.setChecked(lista.get(position).isAtivado());
-            inputVendedorBinding.radioButton2.setChecked(!lista.get(position).isAtivado());
+            inputVendedorBinding.radioDesativado.setChecked(!lista.get(position).isAtivado());
 
             inputVendedorBinding.cadatrar.setText("Atualizar");
             inputVendedorBinding.cadatrar.setOnClickListener(v2 -> {
@@ -211,13 +235,14 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView infos_vendedor;
-        Button editar_vendedor, entrada_saida_vendedor;
+        Button editar_vendedor, entrada_saida_vendedor, delete_vendedor;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             infos_vendedor = itemView.findViewById(R.id.infos_vendedor);
             editar_vendedor = itemView.findViewById(R.id.editar_vendedor);
             entrada_saida_vendedor = itemView.findViewById(R.id.entrada_saida_vendedor);
+            delete_vendedor = itemView.findViewById(R.id.excluir_vendedor);
 
         }
     }

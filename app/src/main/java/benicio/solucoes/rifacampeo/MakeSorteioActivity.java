@@ -86,7 +86,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
                     novoBilhete.getNumeros().add(Integer.parseInt(numeroString));
                 }
 
-                novoBilhete.setLoteria(makeSorteioBinding.radioButtonFB.isChecked() ? "FD" : "COR");
+                novoBilhete.setLoteria(getIntent().getExtras().getString("loteria", "FD"));
 
                 RetrofitUtils.getApiService().saveBilhete(novoBilhete).enqueue(new Callback<SaveBilheteResponse>() {
                     @Override

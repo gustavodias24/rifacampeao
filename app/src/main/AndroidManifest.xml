@@ -19,6 +19,9 @@
         android:theme="@style/Theme.RifaCampeão"
         tools:targetApi="31">
         <activity
+            android:name=".SelectLoteriaActivity"
+            android:exported="false" />
+        <activity
             android:name=".ListagemGanhadoresActivity"
             android:exported="false" />
         <activity
