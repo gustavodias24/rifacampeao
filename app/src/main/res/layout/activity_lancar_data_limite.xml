@@ -25,6 +25,7 @@
             android:id="@+id/editTextDateFD"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="Clique duas vezes para abrir"
             android:ems="10"
             android:inputType="date" />
 
@@ -33,6 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
+            android:hint="Clique duas vezes para abrir"
             android:inputType="time" />
 
         <View
@@ -52,6 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
+            android:hint="Clique duas vezes para abrir"
             android:inputType="date" />
 
         <EditText
@@ -59,6 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
+            android:hint="Clique duas vezes para abrir"
             android:inputType="time" />
 
         <Button

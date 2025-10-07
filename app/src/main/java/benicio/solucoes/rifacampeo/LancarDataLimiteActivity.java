@@ -1,6 +1,8 @@
 package benicio.solucoes.rifacampeo;
 
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +30,7 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
 
     private ActivityLancarDataLimiteBinding mainBinding;
     private EditText editTextDateFD, editTextTimeFD, editTextDateCOR, editTextTimeCOR;
+    Calendar calendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,18 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
         editTextTimeFD = findViewById(R.id.editTextTimeFD);
         editTextDateCOR = findViewById(R.id.editTextDateCOR);
         editTextTimeCOR = findViewById(R.id.editTextTimeCOR);
+
+        calendar = Calendar.getInstance();
+
+        // Clique no campo de Data FD
+        editTextDateFD.setOnClickListener(v -> showDatePicker(editTextDateFD));
+        // Clique no campo de Hora FD
+        editTextTimeFD.setOnClickListener(v -> showTimePicker(editTextTimeFD));
+
+        // Clique no campo de Data COR
+        editTextDateCOR.setOnClickListener(v -> showDatePicker(editTextDateCOR));
+        // Clique no campo de Hora COR
+        editTextTimeCOR.setOnClickListener(v -> showTimePicker(editTextTimeCOR));
 
         // Máscaras
         applyMask(editTextDateFD, "##/##/####");
@@ -150,5 +165,35 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
 
             @Override public void afterTextChanged(Editable s) {}
         });
+    }
+
+    private void showDatePicker(EditText target) {
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePicker = new DatePickerDialog(this,
+                (view, year1, month1, dayOfMonth) -> {
+                    Calendar selected = Calendar.getInstance();
+                    selected.set(year1, month1, dayOfMonth);
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                    target.setText(sdf.format(selected.getTime()));
+                }, year, month, day);
+        datePicker.show();
+    }
+
+    private void showTimePicker(EditText target) {
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+
+        TimePickerDialog timePicker = new TimePickerDialog(this,
+                (view, hourOfDay, minute1) -> {
+                    Calendar selected = Calendar.getInstance();
+                    selected.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    selected.set(Calendar.MINUTE, minute1);
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                    target.setText(sdf.format(selected.getTime()));
+                }, hour, minute, true); // true = 24h
+        timePicker.show();
     }
 }
