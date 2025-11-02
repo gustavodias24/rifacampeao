@@ -26,6 +26,7 @@ import java.util.Random;
 import benicio.solucoes.rifacampeo.adapters.AdapterNumero;
 import benicio.solucoes.rifacampeo.databinding.ActivityMakeSorteioBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
+import benicio.solucoes.rifacampeo.objects.DateLimitModel;
 import benicio.solucoes.rifacampeo.objects.SaveBilheteResponse;
 import benicio.solucoes.rifacampeo.utils.RetrofitUtils;
 import retrofit2.Call;
@@ -34,6 +35,7 @@ import retrofit2.Response;
 
 public class MakeSorteioActivity extends AppCompatActivity {
 
+    public static int valorDoBilhete = 0 ;
     private boolean inFlight = false;
     public static int valorTotalBilhete = 0;
     private SharedPreferences sharedPreferences;
@@ -42,6 +44,8 @@ public class MakeSorteioActivity extends AppCompatActivity {
     private AdapterNumero adapterNumero;
     private List<String> numeros = new ArrayList<>();
 
+    private Dialog dialogCarregando;
+
     @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +53,26 @@ public class MakeSorteioActivity extends AppCompatActivity {
         makeSorteioBinding = ActivityMakeSorteioBinding.inflate(getLayoutInflater());
         setContentView(makeSorteioBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        AlertDialog.Builder bDialog = new AlertDialog.Builder(this);
+        bDialog.setTitle("Carregando...");
+        bDialog.setMessage("Espere!");
+        bDialog.setCancelable(false);
+        dialogCarregando = bDialog.create();
+        dialogCarregando.show();
+
+        RetrofitUtils.getApiService().returnDataLimite().enqueue(new Callback<DateLimitModel>() {
+            @Override
+            public void onResponse(Call<DateLimitModel> call, Response<DateLimitModel> response) {
+                valorDoBilhete = Integer.parseInt(response.body().getValorRifa());
+                dialogCarregando.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<DateLimitModel> call, Throwable throwable) {
+
+            }
+        });
 
         sharedPreferences = getSharedPreferences("info", MODE_PRIVATE);
 
@@ -231,7 +255,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
                 loading_d = loading_b.create();
                 loading_d.show();
 
-                RetrofitUtils.getApiService().checkNumber(new BilheteModel(code)).enqueue(new Callback<>() {
+                RetrofitUtils.getApiService().checkNumber(new BilheteModel(code, getIntent().getExtras().getString("loteria", "FD"))).enqueue(new Callback<>() {
                     @Override
                     public void onResponse(Call<SaveBilheteResponse> call, Response<SaveBilheteResponse> response) {
 
@@ -280,9 +304,9 @@ public class MakeSorteioActivity extends AppCompatActivity {
 
     public static void atualizarPrecoBilhete(int addOrRemove) {
         if (addOrRemove == 1) {
-            valorTotalBilhete += 10;
+            valorTotalBilhete += valorDoBilhete;
         } else {
-            valorTotalBilhete -= 10;
+            valorTotalBilhete -= valorDoBilhete;
         }
 
         makeSorteioBinding.valorTotal.setText("R$ " + valorTotalBilhete + ",00");

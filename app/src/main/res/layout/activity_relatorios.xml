@@ -1,37 +1,210 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootRelatorios"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:padding="12dp">
 
+    <!-- Nome do vendedor (SELECT) -->
     <LinearLayout
-        android:id="@+id/main"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="8dp"
-        tools:context=".RelatoriosActivity">
-
-        <Button
-            android:id="@+id/saida_entrada"
+        <TextView
+            android:layout_marginTop="48dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="lançar saída/entrada" />
+            android:text="Nome do vendedor"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="#444" />
+
+        <Spinner
+            android:id="@+id/spNomeVendedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:background="@drawable/bg_input_round_gray"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp" />
+    </LinearLayout>
+
+    <!-- Documento do vendedor (SELECT) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Lançamentos" />
+            android:text="Recolhe"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="#444" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_lancamento"
+        <Spinner
+            android:id="@+id/spDocumentoVendedor"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:background="@drawable/bg_input_round_gray"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp" />
+    </LinearLayout>
+
+    <!-- id Bilhete -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ID Bilhete"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="#444" />
+
+        <EditText
+            android:id="@+id/spIdBilhete"
+            android:hint="ID do Bilhete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:background="@drawable/bg_input_round_gray"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp" />
+    </LinearLayout>
+
+    <!-- Data inicial -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Data inicial"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="#444" />
+
+        <EditText
+            android:id="@+id/edtDataInicio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="dd/MM/yyyy"
+            android:focusable="false"
+            android:clickable="true"
+            android:background="@drawable/bg_input_round_gray"
+            android:padding="12dp" />
+    </LinearLayout>
+
+    <!-- Data final -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Data final"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="#444" />
+
+        <EditText
+            android:id="@+id/edtDataFim"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="dd/MM/yyyy"
+            android:focusable="false"
+            android:clickable="true"
+            android:background="@drawable/bg_input_round_gray"
+            android:padding="12dp" />
+    </LinearLayout>
+
+    <!-- Loteria (SELECT) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loteria"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="#444" />
+
+        <Spinner
+            android:id="@+id/spLoteria"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:background="@drawable/bg_input_round_gray"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp" />
+    </LinearLayout>
+
+    <!-- AÇÕES -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <Button
+            android:id="@+id/btnBuscar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Buscar"
+            android:layout_weight="1" />
+
+        <Space
+            android:layout_width="12dp"
             android:layout_height="match_parent" />
 
+        <Button
+            android:id="@+id/btnGerarPdf"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Gerar PDF"
+            android:layout_weight="1" />
     </LinearLayout>
-</ScrollView>
+
+    <!-- divisor -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="12dp"
+        android:background="#1F000000" />
+
+    <!-- LISTA -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginBottom="48dp"
+        android:id="@+id/rvBilhetes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

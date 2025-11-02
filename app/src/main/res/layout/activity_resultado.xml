@@ -8,32 +8,45 @@
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-
         android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/marrom"
+        android:paddingBottom="24dp"
         tools:context=".MakeSorteioActivity">
 
+
+        <!-- HORÁRIO / DATA EM CIMA -->
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="31/10/2025"
+            android:textSize="18sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+
+        <!-- LINHA 1 -->
         <LinearLayout
             android:id="@+id/linearLayout4"
             android:layout_width="wrap_content"
             android:layout_height="66dp"
             android:layout_marginStart="4dp"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="4dp"
             android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textView5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <!-- 5 campos para código -->
+            app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1- "
+                android:text="1-"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -84,27 +97,24 @@
                 android:maxLength="1"
                 android:textSize="34sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
+
+        <!-- LINHA 2 -->
         <LinearLayout
             android:id="@+id/linearLayout5"
             android:layout_width="wrap_content"
             android:layout_height="66dp"
-            android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
             android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout4"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- 5 campos para código -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="2-"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -156,28 +166,24 @@
                 android:maxLength="1"
                 android:textSize="34sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
+
+        <!-- LINHA 3 -->
         <LinearLayout
             android:id="@+id/linearLayout6"
             android:layout_width="wrap_content"
             android:layout_height="66dp"
-            android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
             android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout5">
-
-            <!-- 5 campos para código -->
+            app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="3-"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -229,27 +235,24 @@
                 android:maxLength="1"
                 android:textSize="34sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
+
+        <!-- LINHA 4 -->
         <LinearLayout
             android:id="@+id/linearLayout7"
             android:layout_width="wrap_content"
             android:layout_height="66dp"
-            android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
             android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout6"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout6">
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- 5 campos para código -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="4-"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -301,27 +304,24 @@
                 android:maxLength="1"
                 android:textSize="34sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
+
+        <!-- LINHA 5 -->
         <LinearLayout
             android:id="@+id/linearLayout8"
             android:layout_width="wrap_content"
             android:layout_height="66dp"
-            android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
             android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout7"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout7">
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- 5 campos para código -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="5-"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -373,27 +373,24 @@
                 android:maxLength="1"
                 android:textSize="34sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
+
+        <!-- LINHA 6 -->
         <LinearLayout
             android:id="@+id/linearLayout9"
             android:layout_width="wrap_content"
             android:layout_height="66dp"
-            android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
             android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout8"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout8">
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- 5 campos para código -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="6-"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -445,38 +442,77 @@
                 android:maxLength="1"
                 android:textSize="34sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
-        <Button
-            android:id="@+id/button4"
+
+        <!-- RADIOGROUP (FD / COR) -->
+        <RadioGroup
+            android:id="@+id/radioGroupLoteria"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Datas Anteriores"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button5" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout9"
+            app:layout_constraintStart_toStartOf="parent">
 
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Loteria"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioButtonFB"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="FD" />
+
+            <RadioButton
+                android:id="@+id/radioButtonCOR"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="COR" />
+        </RadioGroup>
+
+
+        <!-- BOTÃO LANÇAR NÚMEROS -->
         <Button
             android:id="@+id/button5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Lançar números"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout9" />
+            android:layout_marginTop="16dp"
+            android:text="LANÇAR NÚMEROS"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout9"
+            app:layout_constraintStart_toEndOf="@id/radioGroupLoteria"
+            app:layout_constraintEnd_toEndOf="parent" />
 
+
+        <!-- BOTÃO DATAS ANTERIORES -->
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="DATAS ANTERIORES"
+            app:layout_constraintTop_toBottomOf="@id/button5"
+            app:layout_constraintStart_toStartOf="@id/button5"
+            app:layout_constraintEnd_toEndOf="@id/button5" />
+
+
+        <!-- BOTÕES GANHOU / NADA -->
         <LinearLayout
             android:id="@+id/linearLayout10"
             android:layout_width="wrap_content"
-            android:layout_height="96dp"
-            android:layout_marginTop="8dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
             android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/button4"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button4">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -500,13 +536,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="..." />
-
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
 
                 <Button
                     android:id="@+id/sorteio4"
@@ -528,48 +564,32 @@
             </LinearLayout>
         </LinearLayout>
 
+
+        <!-- PREMIAÇÃO FINAL (SharedPreferences) -->
         <TextView
-            android:id="@+id/textView5"
-            android:layout_width="wrap_content"
+            android:id="@+id/apuracao"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:text="TextView"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <RadioGroup
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout10"
-            app:layout_constraintEnd_toStartOf="@+id/button4"
-            app:layout_constraintHorizontal_bias="0.0"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="Premiação\nAguardando lançamento..."
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/linearLayout10"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout9">
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <TextView
-                android:id="@+id/textView9"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Loteria"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <RadioButton
-                android:id="@+id/radioButtonFB"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="FD" />
-
-            <RadioButton
-                android:id="@+id/radioButtonCOR"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="COR" />
-
-        </RadioGroup>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text=""
+            android:textSize="16sp"
+            android:layout_marginBottom="100dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/apuracao" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

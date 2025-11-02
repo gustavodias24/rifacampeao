@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:id="@+id/scrollViewRoot"
+    >
 
     <LinearLayout
-
         android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp"
         tools:context=".LancarDataLimiteActivity">
@@ -25,8 +26,8 @@
             android:id="@+id/editTextDateFD"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Clique duas vezes para abrir"
             android:ems="10"
+            android:hint="Clique duas vezes para abrir"
             android:inputType="date" />
 
         <EditText
@@ -65,11 +66,182 @@
             android:hint="Clique duas vezes para abrir"
             android:inputType="time" />
 
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Valor Número R$" />
+
+        <EditText
+            android:id="@+id/valorRifa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="$$$$$$$$$$$$"
+            android:inputType="number" />
+
+
+        <!-- ====== FILEIRA 1: Prêmio 1 / Prêmio 2 / Prêmio 3 ====== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <!-- Coluna Prêmio 1 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingEnd="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Prêmio 1" />
+
+                <EditText
+                    android:id="@+id/premio1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="$$$$$$$$$$$$"
+                     />
+            </LinearLayout>
+
+            <!-- Coluna Prêmio 2 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Prêmio 2" />
+
+                <EditText
+                    android:id="@+id/premio2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="$$$$$$$$$$$$"
+                     />
+            </LinearLayout>
+
+            <!-- Coluna Prêmio 3 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Prêmio 3" />
+
+                <EditText
+                    android:id="@+id/premio3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="$$$$$$$$$$$$"
+                     />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <!-- ====== FILEIRA 2: Prêmio 4 / Prêmio 5 / Prêmio 6 ====== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <!-- Coluna Prêmio 4 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingEnd="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Prêmio 4" />
+
+                <EditText
+                    android:id="@+id/premio4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="$$$$$$$$$$$$"
+                     />
+            </LinearLayout>
+
+            <!-- Coluna Prêmio 5 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Prêmio 5" />
+
+                <EditText
+                    android:id="@+id/premio5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="$$$$$$$$$$$$"
+                     />
+            </LinearLayout>
+
+            <!-- Coluna Prêmio 6 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Prêmio 6" />
+
+                <EditText
+                    android:id="@+id/premio6"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="$$$$$$$$$$$$"
+                     />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
         <Button
             android:id="@+id/button6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:layout_marginBottom="220dp"
             android:text="Salvar" />
     </LinearLayout>
 

@@ -1,101 +1,223 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    >
+    android:orientation="vertical"
+    android:background="@color/marrom"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    tools:context=".AdminMasterActivity">
 
+    <!-- ====== ATALHOS / AÇÕES ====== -->
     <LinearLayout
-        android:id="@+id/main"
+        android:id="@+id/mart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/marrom"
-        android:orientation="vertical"
-        android:padding="8dp"
-        tools:context=".AdminMasterActivity">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/mart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:orientation="vertical">
+            android:gravity="center"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
+            <Button
+                android:id="@+id/cadastrarvendedores"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:background="@drawable/vendedor_icon"
+                android:textColor="#000000" />
 
-                <Button
-                    android:id="@+id/cadastrarvendedores"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:background="@drawable/vendedor_icon"
-                    android:textColor="#000000" />
+            <Button
+                android:id="@+id/lancardatalimite"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/gerente_icon"
+                android:textColor="#000000" />
 
-                <Button
-                    android:id="@+id/lancardatalimite"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:background="@drawable/gerente_icon"
-                    android:textColor="#000000" />
-
-                <Button
-                    android:id="@+id/CadastrarRegiao"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:background="@drawable/regiao_icon"
-                    android:textColor="#000000" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/banner"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:background="@drawable/banner_icon"
-                    android:textColor="#000000" />
-
-                <Button
-                    android:id="@+id/button2"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:background="@drawable/resultados_icon"
-                    android:textColor="#000000" />
-
-                <Button
-                    android:id="@+id/button3"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:background="@drawable/relatorio_icon" />
-
-            </LinearLayout>
-
+            <Button
+                android:id="@+id/CadastrarRegiao"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/regiao_icon"
+                android:textColor="#000000" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textView4"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:text="Bilhetes"
-            android:textColor="#000000"
-            android:textStyle="bold" />
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_bilhetes"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            <Button
+                android:id="@+id/banner"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:background="@drawable/banner_icon"
+                android:textColor="#000000" />
 
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/resultados_icon"
+                android:textColor="#000000" />
+
+            <Button
+                android:id="@+id/button3"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/relatorio_icon" />
+        </LinearLayout>
     </LinearLayout>
-</ScrollView>
+    <!-- ====== /ATALHOS / AÇÕES ====== -->
+
+    <!-- ====== FILTROS ====== -->
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/filtrosContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"
+        android:elevation="2dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filtros"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Linha datas -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/edtDataInicio"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Data início (dd/MM/yyyy)"
+                android:inputType="date"
+                android:focusable="false"
+                android:clickable="true"
+                android:padding="10dp"
+                android:background="@android:drawable/editbox_background_normal" />
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/edtDataFim"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Data término (dd/MM/yyyy)"
+                android:inputType="date"
+                android:focusable="false"
+                android:clickable="true"
+                android:padding="10dp"
+                android:background="@android:drawable/editbox_background_normal" />
+        </LinearLayout>
+
+        <!-- Linha vendedor + ID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/edtVendedor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Vendedor (nome ou documento)"
+                android:inputType="text"
+                android:padding="10dp"
+                android:background="@android:drawable/editbox_background_normal" />
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/edtId"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="ID do bilhete"
+                android:inputType="text"
+                android:padding="10dp"
+                android:background="@android:drawable/editbox_background_normal" />
+        </LinearLayout>
+
+        <!-- Ações -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnAplicarFiltro"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Filtrar" />
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btnLimparFiltro"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Limpar" />
+        </LinearLayout>
+    </LinearLayout>
+    <!-- ====== /FILTROS ====== -->
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="Bilhetes"
+        android:textColor="#000000"
+        android:textStyle="bold" />
+
+    <!-- RecyclerView ocupa o restante da tela e é quem rola -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_bilhetes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp" />
+
+</LinearLayout>

@@ -3,11 +3,15 @@ package benicio.solucoes.rifacampeo;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -27,10 +31,20 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LancarDataLimiteActivity extends AppCompatActivity {
-
+    private ScrollView scrollView;
     private ActivityLancarDataLimiteBinding mainBinding;
-    private EditText editTextDateFD, editTextTimeFD, editTextDateCOR, editTextTimeCOR;
+    private EditText editTextDateFD, editTextTimeFD, editTextDateCOR, editTextTimeCOR, editValor;
     Calendar calendar;
+
+
+    private EditText premio1, premio2, premio3, premio4, premio5, premio6;
+    private static final String PREF_NAME = "rifa_premios_prefs";
+    private static final String KEY_PREMIO_1 = "premio_1";
+    private static final String KEY_PREMIO_2 = "premio_2";
+    private static final String KEY_PREMIO_3 = "premio_3";
+    private static final String KEY_PREMIO_4 = "premio_4";
+    private static final String KEY_PREMIO_5 = "premio_5";
+    private static final String KEY_PREMIO_6 = "premio_6";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +58,7 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
         editTextTimeFD = findViewById(R.id.editTextTimeFD);
         editTextDateCOR = findViewById(R.id.editTextDateCOR);
         editTextTimeCOR = findViewById(R.id.editTextTimeCOR);
+        editValor = findViewById(R.id.valorRifa);
 
         calendar = Calendar.getInstance();
 
@@ -76,6 +91,8 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
 
                     editTextTimeFD.setText(response.body().getDataHoraFD().split(" ")[1]);
                     editTextTimeCOR.setText(response.body().getDataHoraCOR().split(" ")[1]);
+
+                    editValor.setText(response.body().getValorRifa());
                 } else {
                     Toast.makeText(LancarDataLimiteActivity.this, "Problema de Conexão", Toast.LENGTH_SHORT).show();
                 }
@@ -91,15 +108,19 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
 
         mainBinding.button6.setOnClickListener(v -> {
 
+            salvarPremiosNosPrefs();
+
             DateLimitModel dateLimitModel = new DateLimitModel();
             dateLimitModel.setDataHoraCOR(editTextDateCOR.getText().toString() + " " + editTextTimeCOR.getText().toString());
             dateLimitModel.setDataHoraFD(editTextDateFD.getText().toString() + " " + editTextTimeFD.getText().toString());
+            dateLimitModel.setValorRifa(editValor.getText().toString());
 
 
             if (    editTextDateFD.getText().toString().isEmpty() ||
                     editTextTimeFD.getText().toString().isEmpty() ||
                     editTextDateCOR.getText().toString().isEmpty() ||
-                    editTextTimeCOR.getText().toString().isEmpty()
+                    editTextTimeCOR.getText().toString().isEmpty() ||
+                    editValor.getText().toString().isEmpty()
 
             ){
                 Toast.makeText(this, "Preencha TODAS as informações", Toast.LENGTH_SHORT).show();
@@ -123,7 +144,66 @@ public class LancarDataLimiteActivity extends AppCompatActivity {
                 }
             });
         });
+        scrollView = findViewById(R.id.scrollViewRoot); // vamos dar um id no ScrollView já já
+        // lista de EditTexts que precisam scroll automático
+        // pega os campos
+        premio1 = findViewById(R.id.premio1);
+        premio2 = findViewById(R.id.premio2);
+        premio3 = findViewById(R.id.premio3);
+        premio4 = findViewById(R.id.premio4);
+        premio5 = findViewById(R.id.premio5);
+        premio6 = findViewById(R.id.premio6);
+        carregarPremiosDosPrefs();
+        View[] campos = {premio1, premio2, premio3, premio4, premio5, premio6};
 
+        for (View campo : campos) {
+            campo.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    // espera o teclado abrir e depois dá scroll
+                    v.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            scrollView.post(() -> scrollView.smoothScrollTo(0, v.getBottom()));
+                            v.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                    });
+                }
+            });
+    }
+    }
+
+    private void carregarPremiosDosPrefs() {
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+
+        String p1 = prefs.getString(KEY_PREMIO_1, "");
+        String p2 = prefs.getString(KEY_PREMIO_2, "");
+        String p3 = prefs.getString(KEY_PREMIO_3, "");
+        String p4 = prefs.getString(KEY_PREMIO_4, "");
+        String p5 = prefs.getString(KEY_PREMIO_5, "");
+        String p6 = prefs.getString(KEY_PREMIO_6, "");
+
+        premio1.setText(p1);
+        premio2.setText(p2);
+        premio3.setText(p3);
+        premio4.setText(p4);
+        premio5.setText(p5);
+        premio6.setText(p6);
+    }
+
+    private void salvarPremiosNosPrefs() {
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.putString(KEY_PREMIO_1, premio1.getText().toString().trim());
+        editor.putString(KEY_PREMIO_2, premio2.getText().toString().trim());
+        editor.putString(KEY_PREMIO_3, premio3.getText().toString().trim());
+        editor.putString(KEY_PREMIO_4, premio4.getText().toString().trim());
+        editor.putString(KEY_PREMIO_5, premio5.getText().toString().trim());
+        editor.putString(KEY_PREMIO_6, premio6.getText().toString().trim());
+
+        editor.apply(); // salva async
+
+        Toast.makeText(this, "Prêmios salvos", Toast.LENGTH_SHORT).show();
     }
 
     private void applyMask(EditText editText, final String mask) {

@@ -2,6 +2,7 @@ package benicio.solucoes.rifacampeo;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,6 +34,14 @@ import retrofit2.Response;
 
 public class ResultadoActivity extends AppCompatActivity {
 
+    private static final String PREF_NAME = "rifa_premios_prefs";
+    private static final String KEY_PREMIO_1 = "premio_1";
+    private static final String KEY_PREMIO_2 = "premio_2";
+    private static final String KEY_PREMIO_3 = "premio_3";
+    private static final String KEY_PREMIO_4 = "premio_4";
+    private static final String KEY_PREMIO_5 = "premio_5";
+    private static final String KEY_PREMIO_6 = "premio_6";
+
     Dialog dialogCarreando;
 
     String dataAtual = "";
@@ -45,6 +54,8 @@ public class ResultadoActivity extends AppCompatActivity {
 
     ApiService apiService;
 
+    String texto;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +63,24 @@ public class ResultadoActivity extends AppCompatActivity {
         mainBinding = ActivityResultadoBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        // pega os valores salvos
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        String p1 = prefs.getString(KEY_PREMIO_1, "");
+        String p2 = prefs.getString(KEY_PREMIO_2, "");
+        String p3 = prefs.getString(KEY_PREMIO_3, "");
+        String p4 = prefs.getString(KEY_PREMIO_4, "");
+        String p5 = prefs.getString(KEY_PREMIO_5, "");
+        String p6 = prefs.getString(KEY_PREMIO_6, "");
+
+        // monta o texto bonitinho
+         texto = "Premiação\n"
+                + "Prêmio 1: " + formataValor(p1) + "\n"
+                + "Prêmio 2: " + formataValor(p2) + "\n"
+                + "Prêmio 3: " + formataValor(p3) + "\n"
+                + "Prêmio 4: " + formataValor(p4) + "\n"
+                + "Prêmio 5: " + formataValor(p5) + "\n"
+                + "Prêmio 6: " + formataValor(p6);
 
         // Define o formato desejado
         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -127,6 +156,8 @@ public class ResultadoActivity extends AppCompatActivity {
             });
         }
 
+
+
         mainBinding.button5.setOnClickListener(v -> {
 
             dialogCarreando.show();
@@ -146,8 +177,8 @@ public class ResultadoActivity extends AppCompatActivity {
             Log.d("Mayara", "nu4: " + nu4);
             Log.d("Mayara", "nu5: " + nu5);
             Log.d("Mayara", "nu6: " + nu6);
-            
-            int soma = nu1 + nu2 + nu3 + nu4 + nu5;
+
+            int soma = ultimos4ViaString(nu1 + nu2 + nu3 + nu4 + nu5);
             
             if (soma == nu6){
                 apiService.bilhetes_ganharadores(new NumerosPremiadosModel(nu1, nu2, nu3, nu4, nu5, nu6, dataAtual , mainBinding.radioButtonFB.isChecked() ? "FD" : "COR" )).enqueue(new Callback<ResultadoBilheteModel>() {
@@ -174,6 +205,8 @@ public class ResultadoActivity extends AppCompatActivity {
                             configurarBotao(btn4, sorteioModel.getSorteio4());
                             configurarBotao(btn5, sorteioModel.getSorteio5());
                             configurarBotao(btn6, sorteioModel.getSorteio6());
+
+                            mainBinding.apuracao.setText(texto);
                         } else {
                             Toast.makeText(ResultadoActivity.this, "Erro na resposta", Toast.LENGTH_SHORT).show();
                         }
@@ -201,6 +234,13 @@ public class ResultadoActivity extends AppCompatActivity {
 
     }
 
+
+    public static int ultimos4ViaString(int valor) {
+        String s = Integer.toString(Math.abs(valor));
+        String ult4 = s.length() > 4 ? s.substring(s.length() - 4) : s;
+        int n = Integer.parseInt(ult4);
+        return valor < 0 ? -n : n;
+    }
     private void configurarBotao(Button button, String link) {
         if (link != null && !link.isEmpty()) {
             button.setText("GANHOU");
@@ -233,5 +273,12 @@ public class ResultadoActivity extends AppCompatActivity {
         // Junta os 4 dígitos e converte em int
         String numeroStr = s1 + s2 + s3 + s4;
         return Integer.parseInt(numeroStr);
+    }
+
+    private String formataValor(String valor) {
+        if (valor == null) return "—";
+        valor = valor.trim();
+        if (valor.isEmpty()) return "—";
+        return valor;
     }
 }
