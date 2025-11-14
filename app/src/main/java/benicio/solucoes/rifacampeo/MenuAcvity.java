@@ -1,8 +1,10 @@
 package benicio.solucoes.rifacampeo;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
@@ -73,6 +75,13 @@ public class MenuAcvity extends AppCompatActivity {
 
     }
 
+    public String getDeviceUniqueId() {
+        return Settings.Secure.getString(
+                getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
+    }
+
     private void setupEditTexts(EditText current, EditText next) {
         current.addTextChangedListener(new TextWatcher() {
             @Override
@@ -95,11 +104,11 @@ public class MenuAcvity extends AppCompatActivity {
     private void checkCode() {
         String code =
                 et1.getText().toString()
-                + et2.getText().toString()
-                + et3.getText().toString()
-                + et4.getText().toString()
-                + et5.getText().toString()
-                + et6.getText().toString();
+                        + et2.getText().toString()
+                        + et3.getText().toString()
+                        + et4.getText().toString()
+                        + et5.getText().toString()
+                        + et6.getText().toString();
 
 //        } else if (code.equals("426759")) {
         if (code.equals("111111")) {
@@ -107,6 +116,7 @@ public class MenuAcvity extends AppCompatActivity {
         } else {
             VendedorModel vendedorModel = new VendedorModel();
             vendedorModel.setSenha(code);
+            vendedorModel.setSerial(getDeviceUniqueId());
             RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
                 @Override
                 public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response) {
@@ -119,7 +129,7 @@ public class MenuAcvity extends AppCompatActivity {
 
                             startActivity(new Intent(MenuAcvity.this, PremioActivity.class));
                         } else {
-                            Toast.makeText(MenuAcvity.this, "Senha Incorreta ou Usuário Bloqueado", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MenuAcvity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Toast.makeText(MenuAcvity.this, "Problema de Conexão!", Toast.LENGTH_SHORT).show();
@@ -138,6 +148,7 @@ public class MenuAcvity extends AppCompatActivity {
         et3.setText("");
         et4.setText("");
         et5.setText("");
-        et6.setText("");;
+        et6.setText("");
+        ;
     }
 }

@@ -10,6 +10,8 @@ import benicio.solucoes.rifacampeo.objects.LancamentoModel;
 import benicio.solucoes.rifacampeo.objects.NumerosPremiadosModel;
 import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
 import benicio.solucoes.rifacampeo.objects.QueryModelVendedorID;
+import benicio.solucoes.rifacampeo.objects.RecolheuModel;
+import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
 import benicio.solucoes.rifacampeo.objects.RegiaoModel;
 import benicio.solucoes.rifacampeo.objects.ResponseSimple;
 import benicio.solucoes.rifacampeo.objects.ResultadoBilheteModel;
@@ -26,6 +28,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
@@ -98,6 +101,17 @@ public interface ApiService {
 
     @GET("delete/vendedor/{id}")
     Call<RetornoModel> vendedor_delete(@Path("id") String _id);
+
+    @POST("salvar-recolhimento")
+    Call<Void> salvar_recolhimento(@Body RecolheuModel recolheuModel);
+
+    @GET("retornar-recolhimento")
+    Call<RecolhimentoResponse> retornar_recolhimento(@Query("vendedor") String vendedor,
+                                                     @Query("data_inicio") String dataInicio,
+                                                     @Query("data_fim") String dataFim,
+                                                     @Query("tipo") Integer tipo,
+                                                     @Query("limit") Integer limit,
+                                                     @Query("page") Integer page);
 
 
 

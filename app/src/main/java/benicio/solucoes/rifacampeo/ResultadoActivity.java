@@ -244,7 +244,7 @@ public class ResultadoActivity extends AppCompatActivity {
     private void configurarBotao(Button button, String link) {
         if (link != null && !link.isEmpty()) {
             button.setText("GANHOU");
-            button.setTextColor(Color.GREEN);
+            button.setTextColor(Color.RED);
 
             button.setOnClickListener(v -> {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
@@ -252,7 +252,7 @@ public class ResultadoActivity extends AppCompatActivity {
             });
         } else {
             button.setText("NADA");
-            button.setTextColor(Color.RED);
+            button.setTextColor(Color.BLACK);
             button.setOnClickListener(null); // sem ação
         }
     }

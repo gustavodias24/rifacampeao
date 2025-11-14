@@ -14,6 +14,17 @@
         tools:context=".QRCodeActivity">
 
 
+        <Button
+            android:id="@+id/print"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/print"
+            android:backgroundTint="#000000"
+            app:layout_constraintBottom_toTopOf="@+id/compartilharZap"
+            app:layout_constraintStart_toStartOf="parent" />
+
         <WebView
             android:id="@+id/webView"
             android:layout_width="match_parent"
@@ -24,28 +35,29 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
-            app:srcCompat="@drawable/ic_launcher_background" >
+            app:srcCompat="@drawable/ic_launcher_background">
 
         </WebView>
 
         <Button
             android:id="@+id/compartilharZap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
             android:layout_marginBottom="16dp"
-            android:text="Compartilhar no Whatsapp"
+            android:background="@drawable/zap"
+            android:backgroundTint="#000000"
             app:layout_constraintBottom_toTopOf="@+id/button"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginBottom="32dp"
             android:text="Voltar"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

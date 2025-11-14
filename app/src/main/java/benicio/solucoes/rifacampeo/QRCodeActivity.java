@@ -1,34 +1,39 @@
 package benicio.solucoes.rifacampeo;
 
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewTreeObserver;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-import benicio.solucoes.rifacampeo.databinding.ActivityMakeSorteioBinding;
 import benicio.solucoes.rifacampeo.databinding.ActivityQrcodeBinding;
 import benicio.solucoes.rifacampeo.utils.ApiService;
+import benicio.solucoes.rifacampeo.utils.PrinterTicketUtils;
 import benicio.solucoes.rifacampeo.utils.RetrofitUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,10 +41,16 @@ import retrofit2.Response;
 
 public class QRCodeActivity extends AppCompatActivity {
 
+    private static final int REQ_BLUETOOTH_PERMS = 1001;
+    private static final int REQUEST_ENABLE_BT = 100;
     private ActivityQrcodeBinding mainBinding;
     ApiService apiService;
 
+    private BluetoothDevice printerBluetooth;
+    String html = "";
+
     @Override
+    @SuppressLint({"MissingPermission", "SimpleDateFormat"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainBinding = ActivityQrcodeBinding.inflate(getLayoutInflater());
@@ -55,6 +66,44 @@ public class QRCodeActivity extends AppCompatActivity {
             }
         });
 
+
+        mainBinding.print.setOnClickListener(v -> {
+            Log.d("amopussy", html);
+            if (printerBluetooth == null)
+                acharPrinterBluetooth();
+            if (printerBluetooth == null)
+                return;
+
+            BluetoothSocket impressora = null;
+            try {
+                impressora = printerBluetooth.createInsecureRfcommSocketToServiceRecord(UUID.randomUUID());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                impressora.connect();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                if (!html.isEmpty()) {
+                    PrinterTicketUtils.printTicketFromHtml(this, printerBluetooth, html);
+                } else {
+                    Toast.makeText(this, "Carregando...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Tente Novamente!", Toast.LENGTH_LONG).show();
+                }
+
+            } finally {
+                try {
+                    impressora.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        });
+
         Bundle b = getIntent().getExtras();
         if (b != null) {
             //String linkQr = b.getString("linkqr", "");
@@ -66,7 +115,7 @@ public class QRCodeActivity extends AppCompatActivity {
             apiService.getBilheteHtml(numero).enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(Call<String> call, Response<String> response) {
-                    String html = response.body();
+                    html = response.body();
                     renderHtmlOnScreen(html);
 
                     mainBinding.compartilharZap.setOnClickListener(v -> {
@@ -84,6 +133,29 @@ public class QRCodeActivity extends AppCompatActivity {
 
         mainBinding.button.setOnClickListener(v -> finish());
 
+    }
+
+    @SuppressLint("MissingPermission")
+    private void acharPrinterBluetooth() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (bluetoothAdapter == null) {
+            Toast.makeText(this, "Bluetooth não foi encontrado ou não disponível neste equipamento.", Toast.LENGTH_SHORT).show();
+            // Device doesn't support Bluetooth
+            return;
+        }
+
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+        for (BluetoothDevice bondedDevice : bondedDevices) {
+            if (bondedDevice.getName().toLowerCase().contains("print")) {
+                printerBluetooth = bondedDevice;
+                break;
+            }
+        }
     }
 
     private void renderHtmlOnScreen(String html) {
@@ -152,6 +224,39 @@ public class QRCodeActivity extends AppCompatActivity {
                 Log.e("share", "Erro salvando/compartilhando PNG", e);
             }
         });
+    }
+
+
+    private void checarPermissoesBluetooth() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            String[] perms = new String[]{
+                    android.Manifest.permission.BLUETOOTH_SCAN,
+                    android.Manifest.permission.BLUETOOTH_CONNECT
+            };
+
+            List<String> faltando = new ArrayList<>();
+            for (String p : perms) {
+                if (ActivityCompat.checkSelfPermission(this, p)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    faltando.add(p);
+                }
+            }
+
+            if (!faltando.isEmpty()) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        faltando.toArray(new String[0]),
+                        REQ_BLUETOOTH_PERMS
+                );
+            } else {
+                // Já tem permissão, pode chamar acharPrinterBluetooth()
+                acharPrinterBluetooth();
+            }
+        } else {
+            // Android 11 ou menor: só chamar direto (já que as permissões antigas
+            // são tratadas na instalação)
+            acharPrinterBluetooth();
+        }
     }
 
 //    private void generateQRCode(String text) {

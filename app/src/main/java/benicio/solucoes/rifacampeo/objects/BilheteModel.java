@@ -14,6 +14,10 @@ public class BilheteModel {
     String numero;
     String loteria;
 
+    String limiteReferencia = "";
+
+    int valorBilheteTotal = 0;
+
     @Override
     public String toString() {
         // Safeguards contra null
@@ -46,12 +50,12 @@ public class BilheteModel {
 
         // Monta HTML
         return
-                "<b>ID:</b><br>" + sId + "<br>" +
+                "<b>Nº do Bilhete:</b><br>" + sId + "<br>" +
                         "<b>Data:</b><br>" + sData + "<br>" +
                         "<b>Hora:</b><br>" + sHora + "<br>" +
                         "<b>Loteria:</b><br>" + sLoteria + "<br>" +
-                        "<b>Nº do Bilhete:</b><br>" + sNumeroBilhete + "<br>" +
-                        "<b>Documento do Vendedor:</b><br>" + sDocVend + "<br>" +
+                        "<b>Recolhe:</b><br>" + sDocVend + "<br>" +
+                        "<b>Validade:</b><br>" + limiteReferencia + "<br>" +
                         "<b>Nome do Vendedor:</b><br>" + sNomeVend + "<br>" +
                         "<b>ID do Usuário:</b><br>" + sUsuario + "<br>" +
                         "<b>Números (" + qtd + "):</b><br>" + (numerosEscolhidos.length() == 0 ? "-" : numerosEscolhidos.toString()) + "<br>" +
@@ -94,6 +98,14 @@ public class BilheteModel {
 
     public void setDocumento_vendedor(String documento_vendedor) {
         this.documento_vendedor = documento_vendedor;
+    }
+
+    public int getValorBilheteTotal() {
+        return valorBilheteTotal;
+    }
+
+    public void setValorBilheteTotal(int valorBilheteTotal) {
+        this.valorBilheteTotal = valorBilheteTotal;
     }
 
     public String get_id() {

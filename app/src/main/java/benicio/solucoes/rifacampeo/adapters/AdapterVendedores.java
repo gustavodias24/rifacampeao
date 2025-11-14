@@ -20,15 +20,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import benicio.solucoes.rifacampeo.PagamentoRecebimentoVendedorActivity;
 import benicio.solucoes.rifacampeo.R;
+import benicio.solucoes.rifacampeo.RelatoriosActivity;
 import benicio.solucoes.rifacampeo.VendedoresActivity;
 import benicio.solucoes.rifacampeo.databinding.ActivityPagamentoRecebimentoVendedorBinding;
 import benicio.solucoes.rifacampeo.databinding.DialogPagamentoRecebimentoBinding;
 import benicio.solucoes.rifacampeo.databinding.LayoutInputVendedorBinding;
+import benicio.solucoes.rifacampeo.objects.BilheteModel;
+import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
+import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
 import benicio.solucoes.rifacampeo.objects.RetornoModel;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
 import benicio.solucoes.rifacampeo.utils.RetrofitUtils;
@@ -156,9 +161,52 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
 //            a.startActivity(i);
         });
 
-        holder.infos_vendedor.setText(
-                Html.fromHtml(lista.get(position).toString())
-        );
+        RetrofitUtils.getApiService().retornar_recolhimento(null, null, null, null, 999999999, 1).enqueue(new Callback<RecolhimentoResponse>() {
+            @Override
+            public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                if (response.isSuccessful()) {
+                    holder.infos_vendedor.setText(
+                            Html.fromHtml(
+                                    lista.get(position).toStringVendedor(response.body().getItens())
+                            )
+                    );
+
+                } else {
+                    Toast.makeText(a, response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+                Toast.makeText(a, "Resposta inválida da API", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+//        RetrofitUtils.getApiService().returnBilhetes(3, new QueryModelEmpty())
+//                .enqueue(new Callback<List<BilheteModel>>() {
+//                    @SuppressLint("NotifyDataSetChanged")
+//                    @Override
+//                    public void onResponse(Call<List<BilheteModel>> call, Response<List<BilheteModel>> response) {
+//                        if (response.isSuccessful() && response.body() != null) {
+//                            int somaBilhetes = 0;
+//
+//                            for ( BilheteModel bilheteModel : response.body()){
+//                                if ( lista.get(position).getNome().equals(bilheteModel.getNome_vendedor())){
+//                                    somaBilhetes += bilheteModel.getValorBilheteTotal();
+//                                }
+//                            }
+//
+//
+//                        } else {
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<List<BilheteModel>> call, Throwable t) {
+//                        Toast.makeText(a, "Falha ao carregar bilhetes", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+
 
         holder.editar_vendedor.setOnClickListener(v -> {
             AlertDialog.Builder b = new AlertDialog.Builder(a);

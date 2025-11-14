@@ -52,13 +52,18 @@
                 android:id="@+id/button7"
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
-                android:text="COR" />
+                android:background="@drawable/btn_coruja"
+                android:scaleX="0.8"
+                android:scaleY="0.8"
+                android:scrollbarStyle="insideOverlay" />
 
             <Button
                 android:id="@+id/button8"
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
-                android:text="FD" />
+                android:background="@drawable/btn_federal"
+                android:scaleX="0.9"
+                android:scaleY="0.87" />
         </LinearLayout>
 
 

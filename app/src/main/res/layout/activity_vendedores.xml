@@ -32,6 +32,19 @@
             android:layout_height="wrap_content"
             android:text="Novo Vendedor" />
 
+        <Button
+            android:visibility="gone"
+            android:id="@+id/relatoriovendedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Relatório Vendedor" />
+
+        <Button
+            android:id="@+id/recolhimento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recolhimento" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvvendedores"
             android:layout_width="match_parent"

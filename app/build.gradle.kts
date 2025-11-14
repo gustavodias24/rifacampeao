@@ -27,9 +27,12 @@ android {
             )
         }
     }
-    buildFeatures{
+
+    buildFeatures {
         viewBinding = true
+        compose = true
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -37,15 +40,19 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
 
+    // Usa os jars da pasta libs (incluindo core-3.3.0.jar)
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    // Exclui o zxing-core que vem do embedded para não conflitar com o core-3.3.0.jar
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0") {
+        exclude(group = "com.google.zxing", module = "core")
+    }
 
     implementation("com.google.android.material:material:1.5.0")
     implementation("me.relex:circleindicator:2.1.6")
@@ -68,6 +75,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.google.material)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

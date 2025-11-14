@@ -104,6 +104,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
                 novoBilhete.setDocumento_vendedor(sharedPreferences.getString("documento", ""));
                 novoBilhete.setNome_vendedor(sharedPreferences.getString("nome", ""));
 
+                novoBilhete.setValorBilheteTotal(valorTotalBilhete);
                 novoBilhete.setHora(horaFormatada);
                 novoBilhete.setId_usuario(sharedPreferences.getString("id_vendedor", ""));
                 for (String numeroString : numeros) {

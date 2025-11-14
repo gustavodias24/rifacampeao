@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".MakeRecolhimentoActivity">
+
+    <LinearLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Título simples -->
+        <TextView
+            android:id="@+id/tvTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registrar recolhimento"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginTop="44dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Seção: Vendedor -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vendedor"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <Spinner
+            android:id="@+id/spVendedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Valor -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Valor"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/edtValor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ex.: 150,00"
+            android:inputType="numberDecimal"
+            android:maxLines="1"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Data e hora -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Data e hora"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/edtDataHora"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="dd/MM/yyyy HH:mm"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+            android:paddingEnd="4dp"
+            android:maxLines="1"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Observações -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Observações"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/edtObservacoes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Opcional"
+            android:inputType="textCapSentences|textMultiLine"
+            android:minLines="3"
+            android:maxLines="5"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Tipo -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tipo"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <RadioGroup
+            android:id="@+id/rgTipo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rbRecolhimento"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Recolhimento"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbPagamento"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Pagamento" />
+        </RadioGroup>
+
+        <!-- Botão confirmar -->
+        <Button
+            android:id="@+id/btnConfirmar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confirmar"
+            android:textAllCaps="false"
+            android:padding="12dp" />
+
+    </LinearLayout>
+</ScrollView>
