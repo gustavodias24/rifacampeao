@@ -219,11 +219,17 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
             inputVendedorBinding.edtDespesas.setText(lista.get(position).getDespesas());
             inputVendedorBinding.edtSenha.setText(lista.get(position).getSenha());
             inputVendedorBinding.edtComissao.setText(lista.get(position).getComissao() + "");
+            inputVendedorBinding.edtLimiteaposta.setText(lista.get(position).getLimiteAposta() + "");
             inputVendedorBinding.radioAtivo.setChecked(lista.get(position).isAtivado());
             inputVendedorBinding.radioDesativado.setChecked(!lista.get(position).isAtivado());
 
             inputVendedorBinding.cadatrar.setText("Atualizar");
             inputVendedorBinding.cadatrar.setOnClickListener(v2 -> {
+
+                int limiteAposta = 0;
+                try{
+                    limiteAposta = Integer.parseInt(inputVendedorBinding.edtLimiteaposta.getText().toString());
+                }catch (Exception ignored){}
 
                 VendedorModel vendedorAtualizado = new VendedorModel(
                         inputVendedorBinding.edtCelular.getText().toString(),
@@ -234,7 +240,8 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
                         "",
                         Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ? inputVendedorBinding.edtComissao.getText().toString() : "0"),
                         inputVendedorBinding.radioAtivo.isChecked(),
-                        inputVendedorBinding.edtDocumento.getText().toString()
+                        inputVendedorBinding.edtDocumento.getText().toString(),
+                        limiteAposta
                 );
 
                 if (inputVendedorBinding.edtComissao.getText().toString().isEmpty()) {

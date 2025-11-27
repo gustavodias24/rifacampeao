@@ -107,6 +107,23 @@
             android:inputType="numberDecimal"
             android:layout_marginBottom="12dp"/>
 
+
+        <!-- Limite -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Limite de Aposta"
+            android:textStyle="bold"
+            android:paddingBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edt_limiteaposta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ex: 500"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="12dp"/>
+
         <!-- Status -->
         <TextView
             android:layout_width="match_parent"

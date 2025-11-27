@@ -8,6 +8,7 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -16,9 +17,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.FileProvider;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.io.File;
@@ -32,9 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import benicio.solucoes.rifacampeo.adapters.AdapterRecolhimento;
-import benicio.solucoes.rifacampeo.adapters.AdapterVendedores;
 import benicio.solucoes.rifacampeo.databinding.ActivityRecolhimentoBinding;
-import benicio.solucoes.rifacampeo.databinding.ActivityVendedoresBinding;
 import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
 import benicio.solucoes.rifacampeo.objects.RecolheuModel;
 import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
@@ -66,16 +62,27 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
         configurarRV();
 
-        adapterNomes = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, nomes);
-        carregarVendedores();   // Preenche Nome/Documento via API
+        // Adapter para o AutoCompleteTextView de vendedor
+        adapterNomes = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                nomes
+        );
+        carregarVendedores();   // Preenche Nome via API
 
-        mainBinding.spVendedor.setAdapter(adapterNomes);
+        // Liga o adapter ao campo edtVendedor
+        mainBinding.edtVendedor.setAdapter(adapterNomes);
+        mainBinding.edtVendedor.setThreshold(1); // começa a sugerir a partir de 1 caractere
 
-        mainBinding.btnadd.setOnClickListener(v -> startActivity(new Intent(this, MakeRecolhimentoActivity.class)));
+        mainBinding.btnadd.setOnClickListener(v ->
+                startActivity(new Intent(this, MakeRecolhimentoActivity.class))
+        );
 
         mainBinding.btnFiltrar.setOnClickListener(v -> {
-            String vendedor = mainBinding.spVendedor.getSelectedItem().toString();
-            if (vendedor.equals("Todos")) vendedor = null;
+            String vendedor = mainBinding.edtVendedor.getText().toString().trim();
+            if (vendedor.isEmpty() || vendedor.equalsIgnoreCase("Todos")) {
+                vendedor = null;
+            }
 
             String dataInicio = mainBinding.etDataInicio.getText().toString().trim();
             String dataFim = mainBinding.etDataFim.getText().toString().trim();
@@ -96,7 +103,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
         mainBinding.etDataFim.setOnClickListener(v -> {
             mostrarDatePicker(mainBinding.etDataFim);
         });
-
 
         mainBinding.btnGerarRelatorio.setOnClickListener(v -> {
             gerarPdfRecolhimentos(lista_recolhimento);
@@ -129,8 +135,11 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
     private void filtrarRecolhimentos(String vendedor, String dataInicio, String dataFim, Integer tipo) {
 
+        // mostra loading
+        showLoading(true);
+
         // Normaliza vendedor: se vazio, manda null
-        String vendedorParam = (vendedor != null && !vendedor.trim().isEmpty() && !vendedor.equals("Todos"))
+        String vendedorParam = (vendedor != null && !vendedor.trim().isEmpty())
                 ? vendedor.trim()
                 : null;
 
@@ -155,6 +164,8 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 .enqueue(new Callback<RecolhimentoResponse>() {
                     @Override
                     public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                        showLoading(false);
+
                         if (response.isSuccessful() && response.body() != null) {
 
                             lista_recolhimento.clear();
@@ -173,13 +184,13 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+                        showLoading(false);
                         Toast.makeText(RecolhimentoActivity.this,
                                 "Erro ao aplicar filtro",
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
     }
-
 
     @Override
     protected void onStart() {
@@ -188,21 +199,26 @@ public class RecolhimentoActivity extends AppCompatActivity {
     }
 
     private void listarRecolhimentos() {
-        RetrofitUtils.getApiService().retornar_recolhimento(null, null, null, null, 999999999, 1).enqueue(new Callback<RecolhimentoResponse>() {
-            @Override
-            public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
-                if (response.isSuccessful()) {
-                    lista_recolhimento.clear();
-                    lista_recolhimento.addAll(response.body().getItens());
-                    adapterRecolhimento.notifyDataSetChanged();
-                }
-            }
+        showLoading(true);
 
-            @Override
-            public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+        RetrofitUtils.getApiService().retornar_recolhimento(null, null, null, null, 999999999, 1)
+                .enqueue(new Callback<RecolhimentoResponse>() {
+                    @Override
+                    public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                        showLoading(false);
 
-            }
-        });
+                        if (response.isSuccessful() && response.body() != null) {
+                            lista_recolhimento.clear();
+                            lista_recolhimento.addAll(response.body().getItens());
+                            adapterRecolhimento.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+                        showLoading(false);
+                    }
+                });
     }
 
     private void configurarRV() {
@@ -221,7 +237,7 @@ public class RecolhimentoActivity extends AppCompatActivity {
                             vendedores.clear();
                             vendedores.addAll(response.body());
 
-                            // Recria as listas mantendo "Todos" como primeiro item
+                            // Recria a lista mantendo "Todos" como primeira opção
                             nomes.clear();
                             nomes.add("Todos");
 
@@ -231,19 +247,34 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
                             adapterNomes.notifyDataSetChanged();
                         } else {
-                            Toast.makeText(RecolhimentoActivity.this, "Erro de conexão ao carregar vendedores", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RecolhimentoActivity.this,
+                                    "Erro de conexão ao carregar vendedores",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<VendedorModel>> call, Throwable t) {
-                        Toast.makeText(RecolhimentoActivity.this, "Falha na API de vendedores", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RecolhimentoActivity.this,
+                                "Falha na API de vendedores",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     private String safe(String s) {
         return (s == null) ? "" : s;
+    }
+
+    /** Mostra o loading no lugar da lista */
+    private void showLoading(boolean show) {
+        if (show) {
+            mainBinding.progressRecolhimento.setVisibility(View.VISIBLE);
+            mainBinding.recolhimentorv.setVisibility(View.GONE);
+        } else {
+            mainBinding.progressRecolhimento.setVisibility(View.GONE);
+            mainBinding.recolhimentorv.setVisibility(View.VISIBLE);
+        }
     }
 
     private void gerarPdfRecolhimentos(List<RecolheuModel> recolhimentos) {
@@ -481,7 +512,5 @@ public class RecolhimentoActivity extends AppCompatActivity {
             startActivity(Intent.createChooser(genericShare, "Compartilhar PDF"));
         }
     }
-
-
 
 }

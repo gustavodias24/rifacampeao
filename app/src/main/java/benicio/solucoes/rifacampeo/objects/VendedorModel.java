@@ -26,6 +26,9 @@ public class VendedorModel {
 
     int info = 1;
 
+    int limiteAposta = 0;
+
+
 
     public VendedorModel() {
     }
@@ -78,6 +81,7 @@ public class VendedorModel {
                 "<b>Senha:</b> " + senha + "<br>" +
                 "<b>Despesas:</b> " + despesas + "<br>" +
                 "<b>Comissão:</b> " + comissao + "%<br>" +
+                "<b>Limite de Aposta:</b> R$ " + limiteAposta + "<br>" +
                 "<b>Ativado:</b> " + ativado + "<br>" +
                 "<b>Número Celular:</b> " + numeroCelular + "<br><br>" +
 
@@ -88,7 +92,7 @@ public class VendedorModel {
                 "<b><big>Saldo " + saldoFmt + "</big></b><br>";
     }
 
-    public VendedorModel(String numeroCelular, String nome, String id, String senha, String despesas, String idSmartphone, int comissao, boolean ativado, String documento) {
+    public VendedorModel(String numeroCelular, String nome, String id, String senha, String despesas, String idSmartphone, int comissao, boolean ativado, String documento, int limiteAposta) {
         this.numeroCelular = numeroCelular;
         this.nome = nome;
         this._id = id;
@@ -98,6 +102,7 @@ public class VendedorModel {
         this.comissao = comissao;
         this.ativado = ativado;
         this.documento = documento;
+        this.limiteAposta = limiteAposta;
     }
 
     public String getTotalFmt() {
@@ -110,6 +115,14 @@ public class VendedorModel {
 
     public void setSerial(String serial) {
         this.serial = serial;
+    }
+
+    public int getLimiteAposta() {
+        return limiteAposta;
+    }
+
+    public void setLimiteAposta(int limiteAposta) {
+        this.limiteAposta = limiteAposta;
     }
 
     public void setTotalFmt(String totalFmt) {

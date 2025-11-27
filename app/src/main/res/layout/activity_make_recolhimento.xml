@@ -24,7 +24,6 @@
             android:layout_marginTop="44dp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Seção: Vendedor -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,11 +31,13 @@
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="12sp" />
 
-        <Spinner
-            android:id="@+id/spVendedor"
+        <AutoCompleteTextView
+            android:id="@+id/edtVendedor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:spinnerMode="dropdown"
+            android:hint="Digite o nome do vendedor"
+            android:inputType="textPersonName"
+            android:completionThreshold="1"
             android:layout_marginBottom="12dp" />
 
         <!-- Valor -->
@@ -69,9 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="dd/MM/yyyy HH:mm"
-            android:focusable="false"
             android:clickable="true"
-            android:inputType="none"
             android:drawableEnd="@android:drawable/ic_menu_my_calendar"
             android:paddingEnd="4dp"
             android:maxLines="1"

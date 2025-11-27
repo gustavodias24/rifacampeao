@@ -111,6 +111,12 @@ public class VendedoresActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        listarVendedores();
+    }
+
     private void listarVendedores() {
         vendedores.clear();
 
@@ -152,6 +158,13 @@ public class VendedoresActivity extends AppCompatActivity {
                 if (inputVendedorBinding.edtSenha.getText().toString().length() != 6) {
                     Toast.makeText(this, "A senha precisa ter 6 dígitos numéricos!", Toast.LENGTH_SHORT).show();
                 } else {
+
+                    int limiteAposta = 0;
+                    try{
+                        limiteAposta = Integer.parseInt(inputVendedorBinding.edtLimiteaposta.getText().toString());
+                    }catch (Exception ignored){}
+
+
                     RetrofitUtils.getApiService().saveVendedores(new VendedorModel(
                             inputVendedorBinding.edtCelular.getText().toString(),
                             inputVendedorBinding.edtNome.getText().toString(),
@@ -161,7 +174,8 @@ public class VendedoresActivity extends AppCompatActivity {
                             "",
                             Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ? inputVendedorBinding.edtComissao.getText().toString() : "0"),
                             inputVendedorBinding.radioAtivo.isChecked(),
-                            inputVendedorBinding.edtComissao.getText().toString()
+                            inputVendedorBinding.edtComissao.getText().toString(),
+                            limiteAposta
                     )).enqueue(new Callback<RetornoModel>() {
                         @Override
                         public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {

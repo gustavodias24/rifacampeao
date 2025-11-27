@@ -6,6 +6,9 @@ public class ResponseSimple {
 
     VendedorModel vendedor = new VendedorModel();
 
+    int valorTotalGeradoCOR = 0;
+    int valorTotalGeradoDF = 0;
+
 
     public VendedorModel getVendedor() {
         return vendedor;
@@ -24,6 +27,22 @@ public class ResponseSimple {
     }
 
     public ResponseSimple() {
+    }
+
+    public int getValorTotalGeradoCOR() {
+        return valorTotalGeradoCOR;
+    }
+
+    public void setValorTotalGeradoCOR(int valorTotalGeradoCOR) {
+        this.valorTotalGeradoCOR = valorTotalGeradoCOR;
+    }
+
+    public int getValorTotalGeradoDF() {
+        return valorTotalGeradoDF;
+    }
+
+    public void setValorTotalGeradoDF(int valorTotalGeradoDF) {
+        this.valorTotalGeradoDF = valorTotalGeradoDF;
     }
 
     public ResponseSimple(boolean success) {

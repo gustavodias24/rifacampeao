@@ -113,7 +113,11 @@ public class MenuAcvity extends AppCompatActivity {
 //        } else if (code.equals("426759")) {
         if (code.equals("111111")) {
             startActivity(new Intent(this, AdminMasterActivity.class));
-        } else {
+        }
+        else if (code.equals("565656")){
+            startActivity(new Intent(this, RecolhimentoActivity.class));
+        }
+        else {
             VendedorModel vendedorModel = new VendedorModel();
             vendedorModel.setSenha(code);
             vendedorModel.setSerial(getDeviceUniqueId());
@@ -127,12 +131,19 @@ public class MenuAcvity extends AppCompatActivity {
                             editor.putString("nome", response.body().getVendedor().getNome()).apply();
                             editor.putString("documento", response.body().getVendedor().getDocumento()).apply();
 
-                            startActivity(new Intent(MenuAcvity.this, PremioActivity.class));
+                            Intent i = new Intent(MenuAcvity.this, PremioActivity.class);
+
+                            i.putExtra("valorTotalGeradoCOR", response.body().getValorTotalGeradoCOR());
+                            i.putExtra("valorTotalGeradoDF", response.body().getValorTotalGeradoDF());
+                            i.putExtra("limiteAposta", response.body().getVendedor().getLimiteAposta());
+                            i.putExtra("code", code);
+
+                            startActivity(i);
                         } else {
-                            Toast.makeText(MenuAcvity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(MenuAcvity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(MenuAcvity.this, "Problema de Conexão!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MenuAcvity.this, "Credenciais Inválidas", Toast.LENGTH_SHORT).show();
                     }
                 }
 

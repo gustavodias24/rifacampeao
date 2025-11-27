@@ -64,6 +64,40 @@
                 android:background="@drawable/btn_federal"
                 android:scaleX="0.9"
                 android:scaleY="0.87" />
+
+            <!-- RESUMO DOS VALORES -->
+            <TextView
+                android:id="@+id/tvValorCoruja"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Carregando..."
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvValorFederal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Carregando..."
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvLimiteAposta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Carregando..."
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStatusCredito"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Carregando..."
+                android:textStyle="bold" />
         </LinearLayout>
 
 

@@ -85,7 +85,15 @@ public class PremioActivity extends AppCompatActivity {
 
             @Override
             public void onClick(int position, CarouselItem carouselItem) {
-                startActivity(new Intent(PremioActivity.this, SelectLoteriaActivity.class));
+
+                Intent i = new Intent(PremioActivity.this, SelectLoteriaActivity.class);
+
+                i.putExtra("valorTotalGeradoCOR", getIntent().getExtras().getInt("valorTotalGeradoCOR", 0));
+                i.putExtra("valorTotalGeradoDF", getIntent().getExtras().getInt("valorTotalGeradoDF", 0));
+                i.putExtra("limiteAposta", getIntent().getExtras().getInt("limiteAposta", 0));
+                i.putExtra("code", getIntent().getExtras().getString("code", ""));
+
+                startActivity(i);
             }
 
             @Override
