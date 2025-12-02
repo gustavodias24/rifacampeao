@@ -1,6 +1,7 @@
 package benicio.solucoes.rifacampeo;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
@@ -33,6 +34,8 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
     private final List<String> nomes = new ArrayList<>();
     private ArrayAdapter<String> adapterNomes;
 
+    private String nomeRecolhedor = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +52,9 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
         );
 
         carregarVendedores();
+
+        nomeRecolhedor = getIntent().getExtras().getString("recolhedor", "");
+        Log.d("buceta", "nomeRecolhedor: " + nomeRecolhedor);
 
         // seta o adapter no campo de vendedor
         mainBinding.edtVendedor.setAdapter(adapterNomes);
@@ -84,7 +90,8 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
                         vendedorTexto, // aqui vai o que foi digitado / escolhido
                         valor,
                         mainBinding.edtObservacoes.getText().toString(),
-                        mainBinding.rbRecolhimento.isChecked() ? 0 : 1
+                        mainBinding.rbRecolhimento.isChecked() ? 0 : 1,
+                        nomeRecolhedor
                 );
 
                 // ---------- AlertDialog de carregando ----------

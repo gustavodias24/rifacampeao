@@ -38,6 +38,8 @@ public class SelectLoteriaActivity extends AppCompatActivity {
     int somaBilhetes = 0;
     int limiteAposta = 0;
 
+    float podefazer = 0.0f;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +49,8 @@ public class SelectLoteriaActivity extends AppCompatActivity {
 
 
         selectLoteriaBinding.button7.setOnClickListener(v -> {
-            if (somaBilhetes >= limiteAposta) {
+            Log.d("buceta", "somaBilhetes: " + somaBilhetes + " " + "limiteAposta: " + limiteAposta);
+            if (limiteAposta <= somaBilhetes) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectLoteriaActivity.this);
                 builder.setTitle("Atenção");
                 builder.setMessage("Você não pode apostar, pois já atingiu o seu limite de crédito.");
@@ -60,7 +63,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
         });
 
         selectLoteriaBinding.button8.setOnClickListener(v -> {
-            if (somaBilhetes >= limiteAposta) {
+            if (limiteAposta <= somaBilhetes) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectLoteriaActivity.this);
                 builder.setTitle("Atenção");
                 builder.setMessage("Você não pode apostar, pois já atingiu o seu limite de crédito.");
@@ -101,11 +104,12 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                         // Monta os textos
                         tvValorCoruja.setText("Você gerou R$ " + valorTotalGeradoCOR + " em bilhetes Coruja");
                         tvValorFederal.setText("Você gerou R$ " + valorTotalGeradoDF + " em bilhetes Federal");
-                        tvLimiteAposta.setText("Seu Crédito para gerar bilhetes é de R$ " + limiteAposta);
+                        podefazer = limiteAposta - (valorTotalGeradoCOR+valorTotalGeradoDF);
+                        tvLimiteAposta.setText("Totalizando R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF));
 
                         Log.d("buceta", "valorTotalGeradoCOR: " + valorTotalGeradoCOR + " " + "valorTotalGeradoDF: " + valorTotalGeradoDF);
 
-                        int somaBilhetes = valorTotalGeradoCOR + valorTotalGeradoDF;
+                        somaBilhetes = valorTotalGeradoCOR + valorTotalGeradoDF;
 
                         Log.d("buceta", "somaBilhetes: " + somaBilhetes + " " + "limiteAposta: " + limiteAposta);
 
@@ -141,6 +145,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                     if (response.body().getSuccess()) {
                         Intent i = new Intent(SelectLoteriaActivity.this, MakeSorteioActivity.class);
                         i.putExtra("loteria", loteria);
+                        i.putExtra("podefazer", podefazer);
                         startActivity(i);
                     }
                     Toast.makeText(SelectLoteriaActivity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();

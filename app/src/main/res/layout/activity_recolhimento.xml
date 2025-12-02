@@ -17,8 +17,9 @@
             android:id="@+id/btnGerarRelatorio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="44dp"
+            android:layout_marginTop="120dp"
             android:layout_marginBottom="8dp"
+            android:backgroundTint="#BA4E4E"
             android:paddingVertical="12dp"
             android:text="Gerar relatório"
             android:textAllCaps="false" />
@@ -102,6 +103,22 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="Recolhedor"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="12sp" />
+
+                <AutoCompleteTextView
+                    android:id="@+id/edtRecolhedor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Digite o nome do recolhedor"
+                    android:inputType="textPersonName"
+                    android:completionThreshold="1"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="Vendedor"
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="12sp" />
@@ -135,6 +152,28 @@
             android:layout_height="1dp"
             android:layout_marginBottom="8dp"
             android:background="#1F000000" />
+
+        <TextView
+            android:id="@+id/textRecolhedor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recolhedor"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/editTextRecolhedor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="text"
+            android:hint="Recolhedor" />
+
+        <Button
+            android:id="@+id/button9"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="salvar nome" />
 
         <Button
             android:id="@+id/btnadd"

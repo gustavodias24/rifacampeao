@@ -1,10 +1,17 @@
 package benicio.solucoes.rifacampeo.objects;
 
+import android.widget.ArrayAdapter;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class RecolheuModel {
+
+
+
 
     private String dataHoraAtual;
     private String vendedor;
@@ -12,17 +19,20 @@ public class RecolheuModel {
     private String observacoes;
     private int tipo;
 
+    private String recolhedor = "";
+
     // Construtor padrão: já seta a data/hora atual
     public RecolheuModel() {
         this.dataHoraAtual = getDataHoraAgora();
     }
 
-    public RecolheuModel(String dataHoraAtual, String vendedor, float valor, String observacoes, int tipo) {
+    public RecolheuModel(String dataHoraAtual, String vendedor, float valor, String observacoes, int tipo, String recolhedor) {
         this.dataHoraAtual = dataHoraAtual;
         this.vendedor = vendedor;
         this.valor = valor;
         this.observacoes = observacoes;
         this.tipo = tipo;
+        this.recolhedor = recolhedor;
     }
 
     public String toStringHtml() {
@@ -30,6 +40,7 @@ public class RecolheuModel {
         String valorFmt = String.format(ptBr, "R$ %.2f", valor);
 
         String tipoDesc = esc(getTipoDescricao());
+        String RecolhedorDesc = esc(getRecolhedor());
         String vendedorStr = esc(vendedor != null ? vendedor : "-");
         String dataStr = esc(dataHoraAtual != null ? dataHoraAtual : "-");
 
@@ -39,6 +50,7 @@ public class RecolheuModel {
         sb.append("<b>Vendedor:</b> ").append(vendedorStr).append("<br>");
         sb.append("<b>Valor:</b> ").append(valorFmt).append("<br>");
         sb.append("<b>Data:</b> ").append(dataStr).append("<br>");
+        sb.append("<b>Recolhedor:</b> ").append(RecolhedorDesc).append("<br>");
 
         if (observacoes != null && !observacoes.trim().isEmpty()) {
             sb.append("<b>Observações:</b> ")
@@ -49,6 +61,14 @@ public class RecolheuModel {
         return sb.toString();
     }
 
+
+    public String getRecolhedor() {
+        return recolhedor;
+    }
+
+    public void setRecolhedor(String recolhedor) {
+        this.recolhedor = recolhedor;
+    }
 
     private String getTipoDescricao() {
         switch (tipo) {

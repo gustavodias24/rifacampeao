@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -237,6 +238,12 @@ public class MakeSorteioActivity extends AppCompatActivity {
     public void addNumero() {
 
         if (inFlight) return;
+        
+        if ( valorTotalBilhete >= getIntent().getExtras().getFloat("podefazer", 0)){
+            Toast.makeText(this, "Limite atingindo!", Toast.LENGTH_SHORT).show();
+            Log.d("buceta", "valorTotalBilhete: " + valorTotalBilhete + " podefazer: " + getIntent().getExtras().getFloat("podefazer", 0));
+            return;
+        }
 
         inFlight = true;
         String code = et1.getText().toString()

@@ -9,7 +9,8 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.Html;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -21,9 +22,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.FileProvider;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,11 +31,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 
 import benicio.solucoes.rifacampeo.adapters.AdapterVendedores;
-import benicio.solucoes.rifacampeo.databinding.ActivityAdminMasterBinding;
 import benicio.solucoes.rifacampeo.databinding.ActivityVendedoresBinding;
 import benicio.solucoes.rifacampeo.databinding.LayoutInputVendedorBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
@@ -71,13 +67,30 @@ public class VendedoresActivity extends AppCompatActivity {
 
         rvVendedores = mainBinding.rvvendedores;
         configurarRV();
-        listarVendedores();
+
+        // ------------ FILTRO DE NOME DO VENDEDOR ------------
+        mainBinding.edtFiltroVendedor.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (adapterVendedores != null) {
+                    adapterVendedores.filtrarPorNome(s.toString());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        // -----------------------------------------------------
 
         mainBinding.relatoriovendedor.setOnClickListener(v -> {
 
             showLoadingDialog();
 
-            // Chama a API UMA vez só
             RetrofitUtils.getApiService().returnBilhetes(3, new QueryModelEmpty())
                     .enqueue(new Callback<List<BilheteModel>>() {
                         @SuppressLint("NotifyDataSetChanged")
@@ -86,14 +99,12 @@ public class VendedoresActivity extends AppCompatActivity {
                             if (response.isSuccessful() && response.body() != null) {
 
                                 List<BilheteModel> bilhetes = response.body();
-
-                                // Agora que temos TODOS os bilhetes, gera o PDF
                                 gerarPdfVendedores(vendedores, bilhetes);
 
                             } else {
                                 Toast.makeText(VendedoresActivity.this,
                                         "Resposta inválida da API", Toast.LENGTH_SHORT).show();
-                                        hideLoadingDialog();
+                                hideLoadingDialog();
                             }
                         }
 
@@ -101,14 +112,17 @@ public class VendedoresActivity extends AppCompatActivity {
                         public void onFailure(Call<List<BilheteModel>> call, Throwable t) {
                             Toast.makeText(VendedoresActivity.this,
                                     "Falha ao carregar bilhetes", Toast.LENGTH_SHORT).show();
-                                        hideLoadingDialog();
+                            hideLoadingDialog();
                         }
                     });
 
         });
 
-        mainBinding.recolhimento.setOnClickListener( v2 -> startActivity(new Intent(this, RecolhimentoActivity.class)));
-
+        mainBinding.recolhimento.setOnClickListener(v2 -> {
+            Intent i = new Intent(this, RecolhimentoActivity.class);
+            i.putExtra("recolhedor", false);
+            startActivity(i);
+        });
     }
 
     @Override
@@ -118,25 +132,52 @@ public class VendedoresActivity extends AppCompatActivity {
     }
 
     private void listarVendedores() {
+        showLoadingDialog();
+
         vendedores.clear();
 
-        RetrofitUtils.getApiService().returnVendedores(1, new QueryModelEmpty()).enqueue(new Callback<List<VendedorModel>>() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onResponse(Call<List<VendedorModel>> call, Response<List<VendedorModel>> response) {
-                if (response.isSuccessful()) {
-                    vendedores.addAll(response.body());
-                    adapterVendedores.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(VendedoresActivity.this, "Erro de conexão", Toast.LENGTH_SHORT).show();
-                }
-            }
+        RetrofitUtils.getApiService()
+                .returnVendedores(1, new QueryModelEmpty())
+                .enqueue(new Callback<List<VendedorModel>>() {
+                    @SuppressLint("NotifyDataSetChanged")
+                    @Override
+                    public void onResponse(Call<List<VendedorModel>> call,
+                                           Response<List<VendedorModel>> response) {
 
-            @Override
-            public void onFailure(Call<List<VendedorModel>> call, Throwable throwable) {
+                        hideLoadingDialog();
 
-            }
-        });
+                        if (response.isSuccessful() && response.body() != null) {
+                            vendedores.clear();
+                            vendedores.addAll(response.body());
+
+                            if (adapterVendedores == null) {
+                                adapterVendedores = new AdapterVendedores(vendedores, VendedoresActivity.this);
+                                rvVendedores.setLayoutManager(new LinearLayoutManager(VendedoresActivity.this));
+                                rvVendedores.setHasFixedSize(true);
+                                rvVendedores.setAdapter(adapterVendedores);
+                            } else {
+                                adapterVendedores.atualizarLista(vendedores);
+                            }
+
+                            // 👉 GARANTE QUE AO ENTRAR NA TELA MOSTRE TUDO
+                            String textoFiltro = mainBinding.edtFiltroVendedor.getText().toString();
+                            adapterVendedores.filtrarPorNome(textoFiltro);
+
+                        } else {
+                            Toast.makeText(VendedoresActivity.this,
+                                    "Erro de conexão ao carregar vendedores",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<VendedorModel>> call, Throwable throwable) {
+                        hideLoadingDialog();
+                        Toast.makeText(VendedoresActivity.this,
+                                "Falha na requisição ao carregar vendedores",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void configurarRV() {
@@ -160,10 +201,10 @@ public class VendedoresActivity extends AppCompatActivity {
                 } else {
 
                     int limiteAposta = 0;
-                    try{
+                    try {
                         limiteAposta = Integer.parseInt(inputVendedorBinding.edtLimiteaposta.getText().toString());
-                    }catch (Exception ignored){}
-
+                    } catch (Exception ignored) {
+                    }
 
                     RetrofitUtils.getApiService().saveVendedores(new VendedorModel(
                             inputVendedorBinding.edtCelular.getText().toString(),
@@ -172,7 +213,8 @@ public class VendedoresActivity extends AppCompatActivity {
                             inputVendedorBinding.edtSenha.getText().toString(),
                             inputVendedorBinding.edtDespesas.getText().toString(),
                             "",
-                            Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ? inputVendedorBinding.edtComissao.getText().toString() : "0"),
+                            Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ?
+                                    inputVendedorBinding.edtComissao.getText().toString() : "0"),
                             inputVendedorBinding.radioAtivo.isChecked(),
                             inputVendedorBinding.edtComissao.getText().toString(),
                             limiteAposta
@@ -196,7 +238,6 @@ public class VendedoresActivity extends AppCompatActivity {
                 }
             }
 
-
         });
 
         b.setView(inputVendedorBinding.getRoot());
@@ -204,10 +245,9 @@ public class VendedoresActivity extends AppCompatActivity {
         dialogVendedor.show();
     }
 
-
-    // Dentro da sua Activity (ex: RelatoriosActivity)
-
-    // Dentro da sua Activity (ex: RelatoriosActivity)
+    // ==================== PDF (mesmo que você já tem) ====================
+    // (mantive igual ao seu, só não cortei nada)
+    // --------------------------------------------------------------------
     private void gerarPdfVendedores(List<VendedorModel> vendedores,
                                     List<BilheteModel> bilhetes) {
 
@@ -258,44 +298,39 @@ public class VendedoresActivity extends AppCompatActivity {
         Canvas canvas = page.getCanvas();
         int y = MARGIN;
 
-        // Cabeçalho (pode usar o mesmo que você já tinha)
         y = drawHeaderVendedores(canvas, title, sub, divider, CONTENT_W, MARGIN, y);
 
         float saldoGeral = 0f;
 
         for (VendedorModel v : vendedores) {
 
-            // ================= SOMA DOS BILHETES DESSE VENDEDOR =================
             int somaBilhetes = 0;
             if (bilhetes != null) {
                 for (BilheteModel b : bilhetes) {
                     if (v.getNome() != null &&
                             v.getNome().equals(b.getNome_vendedor())) {
 
-                        somaBilhetes += b.getValorBilheteTotal(); // int -> soma em reais
+                        somaBilhetes += b.getValorBilheteTotal();
                     }
                 }
             }
 
-            // ================= CÁLCULO IGUAL AO toStringVendedor =================
             float saldoTotal = (v.getRecebimento() + somaBilhetes) - v.getPagamento();
             float comissaoGanha = (saldoTotal * v.getComissao()) / 100f;
             float saldo = saldoTotal - comissaoGanha;
 
-            String totalFmt    = String.format(ptBr, "R$ %.2f", saldoTotal);
+            String totalFmt = String.format(ptBr, "R$ %.2f", saldoTotal);
             String comissaoFmt = String.format(ptBr, "R$ %.2f", comissaoGanha);
-            String saldoFmt    = String.format(ptBr, "R$ %.2f", saldo);
+            String saldoFmt = String.format(ptBr, "R$ %.2f", saldo);
 
             saldoGeral += saldo;
 
-            // ================= LAYOUT / ESPAÇAMENTO =================
             int cardPadding = 18;
             int lineHeight = (int) (value.getTextSize() + 12);
-            int numLinhasBody = 5 + 1 + 1; // dados + (total/ comissão) + saldo
+            int numLinhasBody = 5 + 1 + 1;
             int headerH = (int) (label.getTextSize() + 26);
             int cardH = cardPadding * 2 + headerH + (numLinhasBody * lineHeight);
 
-            // quebra de página se não couber
             if (y + cardH + 30 > PAGE_H - MARGIN) {
                 drawFooterVendedores(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
                 doc.finishPage(page);
@@ -319,31 +354,30 @@ public class VendedoresActivity extends AppCompatActivity {
             int cx = MARGIN + cardPadding;
             int cy = y + cardPadding;
 
-            // Título
             canvas.drawText("Vendedor: " + safe(v.getNome()), cx, cy + label.getTextSize(), label);
             cy += (int) (label.getTextSize() + 8);
 
-            // divisor
             canvas.drawLine(cx, cy, right - cardPadding, cy, divider);
             cy += 14;
 
-            // Dados principais
-            canvas.drawText("Senha: " + safe(v.getSenha()), cx, cy, value);           cy += lineHeight;
-            canvas.drawText("Despesas: " + safe(v.getDespesas()), cx, cy, value);     cy += lineHeight;
-            canvas.drawText("Comissão: " + v.getComissao() + "%", cx, cy, value);     cy += lineHeight;
-            canvas.drawText("Ativado: " + v.isAtivado(), cx, cy, value);              cy += lineHeight;
-            canvas.drawText("Celular: " + safe(v.getNumeroCelular()), cx, cy, value); cy += lineHeight;
+            canvas.drawText("Senha: " + safe(v.getSenha()), cx, cy, value);
+            cy += lineHeight;
+            canvas.drawText("Despesas: " + safe(v.getDespesas()), cx, cy, value);
+            cy += lineHeight;
+            canvas.drawText("Comissão: " + v.getComissao() + "%", cx, cy, value);
+            cy += lineHeight;
+            canvas.drawText("Ativado: " + v.isAtivado(), cx, cy, value);
+            cy += lineHeight;
+            canvas.drawText("Celular: " + safe(v.getNumeroCelular()), cx, cy, value);
+            cy += lineHeight;
 
-            // separador dos valores
             cy += 6;
             canvas.drawLine(cx, cy, right - cardPadding, cy, divider);
             cy += 16;
 
-            // Total + Comissão
             canvas.drawText("Total: " + totalFmt + "   |   Comissão: " + comissaoFmt, cx, cy, value);
             cy += lineHeight;
 
-            // Saldo maior e negrito
             Paint saldoPaint = new Paint(value);
             saldoPaint.setFakeBoldText(true);
             saldoPaint.setTextSize(15f);
@@ -353,7 +387,6 @@ public class VendedoresActivity extends AppCompatActivity {
             y = (int) (bottom + 28);
         }
 
-        // Resumo geral
         String resumoGeral = "Saldo total de todos os vendedores: " +
                 String.format(ptBr, "R$ %.2f", saldoGeral);
         canvas.drawText(resumoGeral, MARGIN, PAGE_H - 40, label);
@@ -361,7 +394,6 @@ public class VendedoresActivity extends AppCompatActivity {
         drawFooterVendedores(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
         doc.finishPage(page);
 
-        // salvar / compartilhar
         File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         if (dir == null) dir = getExternalFilesDir(null);
         String dataArq = new java.text.SimpleDateFormat("dd_MM_yyyy_HH_mm", ptBr)
@@ -370,8 +402,8 @@ public class VendedoresActivity extends AppCompatActivity {
 
         try (FileOutputStream fos = new FileOutputStream(pdf)) {
             doc.writeTo(fos);
-             compartilharPdfNoWhatsApp(pdf); // se quiser
-             hideLoadingDialog();
+            compartilharPdfNoWhatsApp(pdf);
+            hideLoadingDialog();
         } catch (IOException e) {
             hideLoadingDialog();
             Toast.makeText(this, "Erro ao salvar PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -385,7 +417,8 @@ public class VendedoresActivity extends AppCompatActivity {
         canvas.drawText("Relatório de Vendedores", margin, y + title.getTextSize(), title);
         y += (int) (title.getTextSize() + 6);
 
-        String data = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR")).format(new java.util.Date());
+        String data = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR"))
+                .format(new java.util.Date());
         canvas.drawText("Gerado em " + data, margin, y + sub.getTextSize(), sub);
         y += (int) (sub.getTextSize() + 8);
 
@@ -395,7 +428,8 @@ public class VendedoresActivity extends AppCompatActivity {
     }
 
     private void drawFooterVendedores(Canvas canvas, Paint small, int margin, int pageW, int pageH, int pageNum) {
-        String left = "© " + java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) + " • Sistema de Relatórios";
+        String left = "© " + java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) +
+                " • Sistema de Relatórios";
         String right = "Página " + pageNum;
         canvas.drawText(left, margin, pageH - 14, small);
         float rightW = small.measureText(right);
@@ -420,11 +454,9 @@ public class VendedoresActivity extends AppCompatActivity {
             shareIntent.putExtra(Intent.EXTRA_TEXT, "Segue o relatório em PDF 📄");
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            // tenta mandar direto pro WhatsApp
             shareIntent.setPackage("com.whatsapp");
             startActivity(shareIntent);
         } catch (Exception e) {
-            // fallback: qualquer app
             Intent genericShare = new Intent(Intent.ACTION_SEND);
             genericShare.setType("application/pdf");
             genericShare.putExtra(
@@ -442,10 +474,8 @@ public class VendedoresActivity extends AppCompatActivity {
         if (loadingDialog != null && loadingDialog.isShowing()) return;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(false); // não pode fechar
         builder.setCancelable(false);
 
-        // Layout simples com ProgressBar + texto
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(60, 40, 60, 40);
@@ -471,6 +501,5 @@ public class VendedoresActivity extends AppCompatActivity {
             loadingDialog.dismiss();
         }
     }
-
 
 }

@@ -3,12 +3,9 @@ package benicio.solucoes.rifacampeo.adapters;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Intent;
-import android.text.Editable;
 import android.text.Html;
 import android.text.InputFilter;
 import android.text.Spanned;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,19 +17,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import benicio.solucoes.rifacampeo.PagamentoRecebimentoVendedorActivity;
 import benicio.solucoes.rifacampeo.R;
-import benicio.solucoes.rifacampeo.RelatoriosActivity;
-import benicio.solucoes.rifacampeo.VendedoresActivity;
-import benicio.solucoes.rifacampeo.databinding.ActivityPagamentoRecebimentoVendedorBinding;
 import benicio.solucoes.rifacampeo.databinding.DialogPagamentoRecebimentoBinding;
 import benicio.solucoes.rifacampeo.databinding.LayoutInputVendedorBinding;
-import benicio.solucoes.rifacampeo.objects.BilheteModel;
-import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
 import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
 import benicio.solucoes.rifacampeo.objects.RetornoModel;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
@@ -46,14 +36,52 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
     int tipo = 0;
     private Dialog dialogVendedor;
 
+    // lista exibida no RecyclerView (pode estar filtrada)
     List<VendedorModel> lista;
-    Activity a;
+    // cópia completa para o filtro
+    List<VendedorModel> listaOriginal;
 
+    Activity a;
     Dialog d_pagamento;
 
     public AdapterVendedores(List<VendedorModel> lista, Activity a) {
         this.lista = lista;
         this.a = a;
+        // cria cópia da lista original
+        this.listaOriginal = new ArrayList<>(lista);
+    }
+
+    // chamar na Activity quando recarregar os vendedores da API
+    @SuppressLint("NotifyDataSetChanged")
+    public void atualizarLista(List<VendedorModel> novaLista) {
+        listaOriginal.clear();
+        listaOriginal.addAll(novaLista);
+
+        lista.clear();
+        lista.addAll(novaLista);
+
+        notifyDataSetChanged();
+    }
+
+    // filtro por nome, chamado pela Activity no TextWatcher
+    @SuppressLint("NotifyDataSetChanged")
+    public void filtrarPorNome(String texto) {
+        String query = (texto == null) ? "" : texto.trim().toLowerCase();
+
+        lista.clear();
+
+        if (query.isEmpty()) {
+            // SEM FILTRO → mostra todos
+            lista.addAll(listaOriginal);
+        } else {
+            for (VendedorModel v : listaOriginal) {
+                if (v.getNome() != null &&
+                        v.getNome().toLowerCase().contains(query)) {
+                    lista.add(v);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     InputFilter filter = new InputFilter() {
@@ -73,26 +101,34 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_vendedor, parent, false));
+        return new MyViewHolder(LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.layout_vendedor, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
 
+        // DELETE VENDEDOR
         holder.delete_vendedor.setOnClickListener(v -> {
             int pos = holder.getAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) return; // posição inválida (ex: item já removido)
+            if (pos == RecyclerView.NO_POSITION) return;
 
-            RetrofitUtils.getApiService().vendedor_delete(lista.get(pos).get_id())
+            VendedorModel vendedor = lista.get(pos);
+
+            RetrofitUtils.getApiService().vendedor_delete(vendedor.get_id())
                     .enqueue(new Callback<RetornoModel>() {
                         @Override
                         public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
                             if (response.isSuccessful()) {
                                 Toast.makeText(a, "Vendedor deletado", Toast.LENGTH_SHORT).show();
 
+                                // remove da lista filtrada
                                 lista.remove(pos);
                                 notifyItemRemoved(pos);
-                                notifyItemRangeChanged(pos, lista.size()); // opcional, atualiza posições seguintes
+                                notifyItemRangeChanged(pos, lista.size());
+
+                                // remove também da lista original
+                                removerDaListaOriginalPorId(vendedor.get_id());
                             }
                         }
 
@@ -103,10 +139,16 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
                     });
         });
 
+        // ENTRADA / SAÍDA VENDEDOR
         holder.entrada_saida_vendedor.setOnClickListener(v -> {
+            int pos = holder.getAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) return;
+
             AlertDialog.Builder builder = new AlertDialog.Builder(a);
 
-            DialogPagamentoRecebimentoBinding dialogPagamentoRecebimentoBinding = DialogPagamentoRecebimentoBinding.inflate(a.getLayoutInflater());
+            DialogPagamentoRecebimentoBinding dialogPagamentoRecebimentoBinding =
+                    DialogPagamentoRecebimentoBinding.inflate(a.getLayoutInflater());
+
             dialogPagamentoRecebimentoBinding.acertPagamento.setOnClickListener(v2 -> {
                 dialogPagamentoRecebimentoBinding.layoutPagamentoRecebimento.setVisibility(View.GONE);
                 dialogPagamentoRecebimentoBinding.layoutValor.setVisibility(View.VISIBLE);
@@ -124,19 +166,28 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
             builder.setView(dialogPagamentoRecebimentoBinding.getRoot());
 
             dialogPagamentoRecebimentoBinding.confirmar.setOnClickListener(v2 -> {
-                if (tipo == 0) {
-                    lista.get(position).setPagamento(Float.parseFloat(
-                            dialogPagamentoRecebimentoBinding.editTextText.getText().toString().replace(',', '.')
-                    ) + lista.get(position).getPagamento());
-                } else {
-                    lista.get(position).setRecebimento(Float.parseFloat(
-                            dialogPagamentoRecebimentoBinding.editTextText.getText().toString().replace(',', '.')
-                    ) + lista.get(position).getRecebimento());
+                if (dialogPagamentoRecebimentoBinding.editTextText.getText().toString().isEmpty()) {
+                    Toast.makeText(a, "Informe um valor", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                RetrofitUtils.getApiService().saveVendedores(lista.get(position)).enqueue(new Callback<>() {
+
+                VendedorModel vendedor = lista.get(holder.getAdapterPosition());
+
+                float valor = Float.parseFloat(
+                        dialogPagamentoRecebimentoBinding.editTextText.getText().toString().replace(',', '.')
+                );
+
+                if (tipo == 0) {
+                    vendedor.setPagamento(valor + vendedor.getPagamento());
+                } else {
+                    vendedor.setRecebimento(valor + vendedor.getRecebimento());
+                }
+
+                RetrofitUtils.getApiService().saveVendedores(vendedor).enqueue(new Callback<RetornoModel>() {
                     @SuppressLint("NotifyDataSetChanged")
                     @Override
                     public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
+                        syncVendedorNaListaOriginal(vendedor);
                         notifyDataSetChanged();
                         d_pagamento.dismiss();
                     }
@@ -149,115 +200,104 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
 
             });
             d_pagamento = builder.create();
-
             d_pagamento.show();
-
-
-//            Intent i = new Intent(a, PagamentoRecebimentoVendedorActivity.class);
-//            i.putExtra("NomeVendedor",
-//                    lista.get(position).getNome()).putExtra("VendedorId",
-//                    lista.get(position).get_id());
-//            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            a.startActivity(i);
         });
 
-        RetrofitUtils.getApiService().retornar_recolhimento(null, null, null, null, 999999999, 1).enqueue(new Callback<RecolhimentoResponse>() {
-            @Override
-            public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
-                if (response.isSuccessful()) {
-                    holder.infos_vendedor.setText(
-                            Html.fromHtml(
-                                    lista.get(position).toStringVendedor(response.body().getItens())
-                            )
-                    );
+        // CARREGA RECOLHIMENTO E MONTA TEXTO
+        RetrofitUtils.getApiService().retornar_recolhimento(
+                        null, null, null, null, 999999999, 1)
+                .enqueue(new Callback<RecolhimentoResponse>() {
+                    @Override
+                    public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            int pos = holder.getAdapterPosition();
+                            if (pos == RecyclerView.NO_POSITION) return;
 
-                } else {
-                    Toast.makeText(a, response.message(), Toast.LENGTH_SHORT).show();
-                }
-            }
+                            holder.infos_vendedor.setText(
+                                    Html.fromHtml(
+                                            lista.get(pos).toStringVendedor(response.body().getItens())
+                                    )
+                            );
 
-            @Override
-            public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
-                Toast.makeText(a, "Resposta inválida da API", Toast.LENGTH_SHORT).show();
-            }
-        });
+                        } else {
+                            Toast.makeText(a, response.message(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-//        RetrofitUtils.getApiService().returnBilhetes(3, new QueryModelEmpty())
-//                .enqueue(new Callback<List<BilheteModel>>() {
-//                    @SuppressLint("NotifyDataSetChanged")
-//                    @Override
-//                    public void onResponse(Call<List<BilheteModel>> call, Response<List<BilheteModel>> response) {
-//                        if (response.isSuccessful() && response.body() != null) {
-//                            int somaBilhetes = 0;
-//
-//                            for ( BilheteModel bilheteModel : response.body()){
-//                                if ( lista.get(position).getNome().equals(bilheteModel.getNome_vendedor())){
-//                                    somaBilhetes += bilheteModel.getValorBilheteTotal();
-//                                }
-//                            }
-//
-//
-//                        } else {
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Call<List<BilheteModel>> call, Throwable t) {
-//                        Toast.makeText(a, "Falha ao carregar bilhetes", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
+                    @Override
+                    public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+                        Toast.makeText(a, "Resposta inválida da API", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-
+        // EDITAR VENDEDOR
         holder.editar_vendedor.setOnClickListener(v -> {
+            int pos = holder.getAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) return;
+
+            VendedorModel vendedorAtual = lista.get(pos);
+
             AlertDialog.Builder b = new AlertDialog.Builder(a);
 
-            LayoutInputVendedorBinding inputVendedorBinding = LayoutInputVendedorBinding.inflate(a.getLayoutInflater());
+            LayoutInputVendedorBinding inputVendedorBinding =
+                    LayoutInputVendedorBinding.inflate(a.getLayoutInflater());
 
-            inputVendedorBinding.edtNome.setText(lista.get(position).getNome());
-            inputVendedorBinding.edtDocumento.setText(lista.get(position).getDocumento());
-            inputVendedorBinding.edtCelular.setText(lista.get(position).getNumeroCelular());
-            inputVendedorBinding.edtDespesas.setText(lista.get(position).getDespesas());
-            inputVendedorBinding.edtSenha.setText(lista.get(position).getSenha());
-            inputVendedorBinding.edtComissao.setText(lista.get(position).getComissao() + "");
-            inputVendedorBinding.edtLimiteaposta.setText(lista.get(position).getLimiteAposta() + "");
-            inputVendedorBinding.radioAtivo.setChecked(lista.get(position).isAtivado());
-            inputVendedorBinding.radioDesativado.setChecked(!lista.get(position).isAtivado());
+            inputVendedorBinding.edtNome.setText(vendedorAtual.getNome());
+            inputVendedorBinding.edtDocumento.setText(vendedorAtual.getDocumento());
+            inputVendedorBinding.edtCelular.setText(vendedorAtual.getNumeroCelular());
+            inputVendedorBinding.edtDespesas.setText(vendedorAtual.getDespesas());
+            inputVendedorBinding.edtSenha.setText(vendedorAtual.getSenha());
+            inputVendedorBinding.edtComissao.setText(vendedorAtual.getComissao() + "");
+            inputVendedorBinding.edtLimiteaposta.setText(vendedorAtual.getLimiteAposta() + "");
+            inputVendedorBinding.radioAtivo.setChecked(vendedorAtual.isAtivado());
+            inputVendedorBinding.radioDesativado.setChecked(!vendedorAtual.isAtivado());
 
             inputVendedorBinding.cadatrar.setText("Atualizar");
             inputVendedorBinding.cadatrar.setOnClickListener(v2 -> {
 
                 int limiteAposta = 0;
-                try{
+                try {
                     limiteAposta = Integer.parseInt(inputVendedorBinding.edtLimiteaposta.getText().toString());
-                }catch (Exception ignored){}
+                } catch (Exception ignored) { }
+
+                if (inputVendedorBinding.edtComissao.getText().toString().isEmpty()) {
+                    Toast.makeText(a, "Comissão não pode ser vazio", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (inputVendedorBinding.edtSenha.getText().toString().length() != 6) {
+                    Toast.makeText(a, "A senha precisa ter 6 dígitos numéricos!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 VendedorModel vendedorAtualizado = new VendedorModel(
                         inputVendedorBinding.edtCelular.getText().toString(),
                         inputVendedorBinding.edtNome.getText().toString(),
-                        lista.get(position).get_id(),
+                        vendedorAtual.get_id(),
                         inputVendedorBinding.edtSenha.getText().toString(),
                         inputVendedorBinding.edtDespesas.getText().toString(),
                         "",
-                        Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ? inputVendedorBinding.edtComissao.getText().toString() : "0"),
+                        Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty()
+                                ? inputVendedorBinding.edtComissao.getText().toString()
+                                : "0"),
                         inputVendedorBinding.radioAtivo.isChecked(),
                         inputVendedorBinding.edtDocumento.getText().toString(),
                         limiteAposta
                 );
 
-                if (inputVendedorBinding.edtComissao.getText().toString().isEmpty()) {
-                    Toast.makeText(a, "Comissão não pode ser vazio", Toast.LENGTH_SHORT).show();
-                } else {
-                    if (inputVendedorBinding.edtSenha.getText().toString().length() != 6) {
-                        Toast.makeText(a, "A senha precisa ter 6 dígitos numéricos!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        RetrofitUtils.getApiService().saveVendedores(vendedorAtualizado).enqueue(new Callback<RetornoModel>() {
+                RetrofitUtils.getApiService().saveVendedores(vendedorAtualizado)
+                        .enqueue(new Callback<RetornoModel>() {
                             @SuppressLint("NotifyDataSetChanged")
                             @Override
                             public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
                                 if (response.isSuccessful()) {
                                     Toast.makeText(a, "Atualizado!", Toast.LENGTH_SHORT).show();
-                                    lista.remove(position);
-                                    lista.add(position, vendedorAtualizado);
+
+                                    // atualiza na lista filtrada
+                                    lista.set(pos, vendedorAtualizado);
+                                    // atualiza na lista original
+                                    syncVendedorNaListaOriginal(vendedorAtualizado);
+
                                     notifyDataSetChanged();
                                     dialogVendedor.dismiss();
                                 } else {
@@ -270,9 +310,6 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
 
                             }
                         });
-                    }
-                }
-
 
             });
 
@@ -287,6 +324,28 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
         return lista.size();
     }
 
+    // remove vendedor da listaOriginal pelo _id
+    private void removerDaListaOriginalPorId(String id) {
+        if (id == null) return;
+        for (int i = 0; i < listaOriginal.size(); i++) {
+            if (id.equals(listaOriginal.get(i).get_id())) {
+                listaOriginal.remove(i);
+                break;
+            }
+        }
+    }
+
+    // sincroniza um vendedor atualizado na listaOriginal
+    private void syncVendedorNaListaOriginal(VendedorModel vendedorAtualizado) {
+        if (vendedorAtualizado == null || vendedorAtualizado.get_id() == null) return;
+        for (int i = 0; i < listaOriginal.size(); i++) {
+            if (vendedorAtualizado.get_id().equals(listaOriginal.get(i).get_id())) {
+                listaOriginal.set(i, vendedorAtualizado);
+                break;
+            }
+        }
+    }
+
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView infos_vendedor;
@@ -298,7 +357,6 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
             editar_vendedor = itemView.findViewById(R.id.editar_vendedor);
             entrada_saida_vendedor = itemView.findViewById(R.id.entrada_saida_vendedor);
             delete_vendedor = itemView.findViewById(R.id.excluir_vendedor);
-
         }
     }
 }

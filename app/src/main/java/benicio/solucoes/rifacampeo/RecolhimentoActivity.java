@@ -2,12 +2,14 @@ package benicio.solucoes.rifacampeo;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -52,6 +54,13 @@ public class RecolhimentoActivity extends AppCompatActivity {
     private final List<VendedorModel> vendedores = new ArrayList<>();
     private final List<String> nomes = new ArrayList<>();
 
+    private String nomeRecolhedor = "";
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor edt;
+
+    private final List<String> nomesRecolhedor = new ArrayList<>();
+    private ArrayAdapter<String> adapterRecolhedor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +69,30 @@ public class RecolhimentoActivity extends AppCompatActivity {
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
+        adapterRecolhedor = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                nomesRecolhedor
+        );
+
+        mainBinding.edtRecolhedor.setAdapter(adapterRecolhedor);
+        mainBinding.edtRecolhedor.setThreshold(1);
+
         configurarRV();
+
+        prefs = getSharedPreferences("rprefs", MODE_PRIVATE);
+        edt = prefs.edit();
+        nomeRecolhedor = prefs.getString("recolhedor", "");
+        mainBinding.editTextRecolhedor.setText(nomeRecolhedor);
+
+        Bundle b = getIntent().getExtras();
+        assert b != null;
+        Log.d("buceta", "onCreate: " + b.getBoolean("recolhedor", false));
+        if (!b.getBoolean("recolhedor", false)) {
+            mainBinding.textRecolhedor.setVisibility(View.GONE);
+            mainBinding.editTextRecolhedor.setVisibility(View.GONE);
+            mainBinding.button9.setVisibility(View.GONE);
+        }
 
         // Adapter para o AutoCompleteTextView de vendedor
         adapterNomes = new ArrayAdapter<>(
@@ -74,27 +106,51 @@ public class RecolhimentoActivity extends AppCompatActivity {
         mainBinding.edtVendedor.setAdapter(adapterNomes);
         mainBinding.edtVendedor.setThreshold(1); // começa a sugerir a partir de 1 caractere
 
+        mainBinding.button9.setOnClickListener(v -> {
+            nomeRecolhedor = mainBinding.editTextRecolhedor.getText().toString();
+            edt.putString("recolhedor", nomeRecolhedor).apply();
+            Toast.makeText(this, "Recolhedor Salvo!", Toast.LENGTH_SHORT).show();
+        });
+
         mainBinding.btnadd.setOnClickListener(v ->
-                startActivity(new Intent(this, MakeRecolhimentoActivity.class))
+                {
+                    if (nomeRecolhedor.isEmpty()) {
+                        Toast.makeText(this, "Insira um nome de recolhedor!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Intent i = new Intent(this, MakeRecolhimentoActivity.class);
+                        i.putExtra("recolhedor", nomeRecolhedor);
+                        startActivity(i);
+                    }
+                }
         );
 
         mainBinding.btnFiltrar.setOnClickListener(v -> {
+            // Vendedor
             String vendedor = mainBinding.edtVendedor.getText().toString().trim();
             if (vendedor.isEmpty() || vendedor.equalsIgnoreCase("Todos")) {
                 vendedor = null;
             }
 
+            // Datas
             String dataInicio = mainBinding.etDataInicio.getText().toString().trim();
             String dataFim = mainBinding.etDataFim.getText().toString().trim();
 
             if (dataInicio.isEmpty()) dataInicio = null;
             if (dataFim.isEmpty()) dataFim = null;
 
+            // Recolhedor digitado no AutoCompleteTextView
+            String recolhedorFiltro = mainBinding.edtRecolhedor.getText().toString().trim();
+            if (recolhedorFiltro.isEmpty()) {
+                recolhedorFiltro = null;
+            }
+
             // tipo não tem no layout, então deixamos como null
             Integer tipo = null;
 
-            filtrarRecolhimentos(vendedor, dataInicio, dataFim, tipo);
+            // agora passamos o recolhedor também
+            filtrarRecolhimentos(vendedor, dataInicio, dataFim, tipo, recolhedorFiltro);
         });
+
 
         mainBinding.etDataInicio.setOnClickListener(v -> {
             mostrarDatePicker(mainBinding.etDataInicio);
@@ -133,17 +189,21 @@ public class RecolhimentoActivity extends AppCompatActivity {
         dp.show();
     }
 
-    private void filtrarRecolhimentos(String vendedor, String dataInicio, String dataFim, Integer tipo) {
+    private void filtrarRecolhimentos(String vendedor,
+                                      String dataInicio,
+                                      String dataFim,
+                                      Integer tipo,
+                                      String recolhedorFiltro) {
 
-        // mostra loading
+        lista_recolhimento.clear();
         showLoading(true);
 
-        // Normaliza vendedor: se vazio, manda null
+        // Normaliza vendedor
         String vendedorParam = (vendedor != null && !vendedor.trim().isEmpty())
                 ? vendedor.trim()
                 : null;
 
-        // Normaliza datas: se vazio, manda null
+        // Normaliza datas
         String dataInicioParam = (dataInicio != null && !dataInicio.trim().isEmpty())
                 ? dataInicio.trim()
                 : null;
@@ -163,13 +223,55 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 )
                 .enqueue(new Callback<RecolhimentoResponse>() {
                     @Override
-                    public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                    public void onResponse(Call<RecolhimentoResponse> call,
+                                           Response<RecolhimentoResponse> response) {
                         showLoading(false);
 
                         if (response.isSuccessful() && response.body() != null) {
 
                             lista_recolhimento.clear();
-                            lista_recolhimento.addAll(response.body().getItens());
+                            List<RecolheuModel> itensApi = response.body().getItens();
+
+                            // modo especial (tela aberta como "recolhedor" = true no Intent)
+                            Bundle b = getIntent().getExtras();
+                            boolean modoRecolhedor = b != null && b.getBoolean("recolhedor", false);
+
+                            String recolhedorFiltroNorm = recolhedorFiltro != null
+                                    ? recolhedorFiltro.trim()
+                                    : "";
+                            String nomeRecolhedorNorm = nomeRecolhedor != null
+                                    ? nomeRecolhedor.trim()
+                                    : "";
+
+                            // Se não tem filtro de recolhedor e não está em modoRecolhedor,
+                            // traz tudo normalmente
+                            if (!modoRecolhedor && recolhedorFiltroNorm.isEmpty()) {
+                                lista_recolhimento.addAll(itensApi);
+                            } else {
+                                // Senão, aplica as regras de filtro
+                                for (RecolheuModel r : itensApi) {
+                                    String rec = r.getRecolhedor() == null
+                                            ? ""
+                                            : r.getRecolhedor().trim();
+
+                                    // filtro pela tela "modoRecolhedor"
+                                    boolean okTela = true;
+                                    if (modoRecolhedor && !nomeRecolhedorNorm.isEmpty()) {
+                                        okTela = rec.equalsIgnoreCase(nomeRecolhedorNorm);
+                                    }
+
+                                    // filtro pelo campo edtRecolhedor (filtro manual)
+                                    boolean okFiltro = true;
+                                    if (!recolhedorFiltroNorm.isEmpty()) {
+                                        okFiltro = rec.equalsIgnoreCase(recolhedorFiltroNorm);
+                                    }
+
+                                    if (okTela && okFiltro) {
+                                        lista_recolhimento.add(r);
+                                    }
+                                }
+                            }
+
                             adapterRecolhimento.notifyDataSetChanged();
 
                             Toast.makeText(RecolhimentoActivity.this,
@@ -208,9 +310,26 @@ public class RecolhimentoActivity extends AppCompatActivity {
                         showLoading(false);
 
                         if (response.isSuccessful() && response.body() != null) {
+
                             lista_recolhimento.clear();
-                            lista_recolhimento.addAll(response.body().getItens());
+
+                            List<RecolheuModel> itensApi = response.body().getItens();
+
+                            // mantém sua lógica de filtro por recolhedor atual
+                            if (!getIntent().getExtras().getBoolean("recolhedor", false)) {
+                                lista_recolhimento.addAll(itensApi);
+                            } else {
+                                for (RecolheuModel recolhe : itensApi) {
+                                    if (recolhe.getRecolhedor().equals(nomeRecolhedor)) {
+                                        lista_recolhimento.add(recolhe);
+                                    }
+                                }
+                            }
                             adapterRecolhimento.notifyDataSetChanged();
+
+                            // 👉 ATUALIZA O AUTOCOMPLETE DOS RECOLHEDORES
+                            atualizarAutocompleteRecolhedor(itensApi);
+
                         }
                     }
 
@@ -221,6 +340,25 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 });
     }
 
+    private void atualizarAutocompleteRecolhedor(List<RecolheuModel> itens) {
+        nomesRecolhedor.clear();
+
+        // usar Set pra evitar nomes duplicados
+        java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
+
+        for (RecolheuModel r : itens) {
+            String rec = r.getRecolhedor();
+            if (rec != null) {
+                rec = rec.trim();
+                if (!rec.isEmpty()) {
+                    set.add(rec);
+                }
+            }
+        }
+
+        nomesRecolhedor.addAll(set);
+        adapterRecolhedor.notifyDataSetChanged();
+    }
     private void configurarRV() {
         mainBinding.recolhimentorv.setLayoutManager(new LinearLayoutManager(this));
         mainBinding.recolhimentorv.setHasFixedSize(true);
@@ -266,7 +404,9 @@ public class RecolhimentoActivity extends AppCompatActivity {
         return (s == null) ? "" : s;
     }
 
-    /** Mostra o loading no lugar da lista */
+    /**
+     * Mostra o loading no lugar da lista
+     */
     private void showLoading(boolean show) {
         if (show) {
             mainBinding.progressRecolhimento.setVisibility(View.VISIBLE);

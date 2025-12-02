@@ -115,7 +115,9 @@ public class MenuAcvity extends AppCompatActivity {
             startActivity(new Intent(this, AdminMasterActivity.class));
         }
         else if (code.equals("565656")){
-            startActivity(new Intent(this, RecolhimentoActivity.class));
+            Intent i = new Intent(this, RecolhimentoActivity.class);
+            i.putExtra("recolhedor", true);
+            startActivity(i);
         }
         else {
             VendedorModel vendedorModel = new VendedorModel();
@@ -143,7 +145,7 @@ public class MenuAcvity extends AppCompatActivity {
                             //Toast.makeText(MenuAcvity.this, response.body().getMsg(), Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(MenuAcvity.this, "Credenciais Inválidas", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MenuAcvity.this, "Credenciais Inválidas", Toast.LENGTH_SHORT).show();
                     }
                 }
 
