@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.Collections;
@@ -27,6 +28,7 @@ public class VendedorModel {
     int info = 1;
 
     int limiteAposta = 0;
+    int valor_bilhetes_gerados = 0;
 
 
 
@@ -67,7 +69,8 @@ public class VendedorModel {
 
     public String toStringVendedor(List<RecolheuModel> recolhimentos) {
 
-        float saldoTotal = calcularSaldoPorVendedor(recolhimentos);
+        float saldoTotal = calcularSaldoPorVendedor(recolhimentos) + getValor_bilhetes_gerados();
+
         float comissaoGanha = (saldoTotal * comissao) / 100f;
         float saldo = saldoTotal - comissaoGanha;
 
@@ -111,6 +114,14 @@ public class VendedorModel {
 
     public String getSerial() {
         return serial;
+    }
+
+    public int getValor_bilhetes_gerados() {
+        return valor_bilhetes_gerados;
+    }
+
+    public void setValor_bilhetes_gerados(int valor_bilhetes_gerados) {
+        this.valor_bilhetes_gerados = valor_bilhetes_gerados;
     }
 
     public void setSerial(String serial) {
