@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.Html;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,6 +27,7 @@ import benicio.solucoes.rifacampeo.databinding.ActivityMakeSorteioBinding;
 import benicio.solucoes.rifacampeo.databinding.ActivitySelectLoteriaBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.DateLimitModel;
+import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
 import benicio.solucoes.rifacampeo.objects.ResponseSimple;
 import benicio.solucoes.rifacampeo.objects.RetornoModel;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
@@ -35,7 +39,7 @@ import retrofit2.Response;
 public class SelectLoteriaActivity extends AppCompatActivity {
 
     private ActivitySelectLoteriaBinding selectLoteriaBinding;
-    int somaBilhetes = 0;
+    float somaBilhetes = 0.0f;
     int limiteAposta = 0;
 
     float podefazer = 0.0f;
@@ -81,45 +85,75 @@ public class SelectLoteriaActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         VendedorModel vendedorModel = new VendedorModel();
-        Log.d("buceta", "onStart: " + getIntent().getStringExtra("code"));
+
+
         vendedorModel.setSenha(getIntent().getStringExtra("code"));
         vendedorModel.setSerial(getDeviceUniqueId());
         RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
             @Override
-            public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response) {
-                if (response.isSuccessful()) {
-                    if (response.body().isSuccess()) {
+            public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response1) {
+                if (response1.isSuccessful()) {
+                    if (response1.body().isSuccess()) {
 
-                        // Pega os extras da Intent
-                        int valorTotalGeradoCOR = response.body().getValorTotalGeradoCOR();
-                        int valorTotalGeradoDF = response.body().getValorTotalGeradoDF();
-                        limiteAposta = response.body().getVendedor().getLimiteAposta();
+                        RetrofitUtils.getApiService().retornar_recolhimento(
+                                        null, null, null, null, 999999999, 1)
+                                .enqueue(new Callback<RecolhimentoResponse>() {
+                                    @Override
+                                    public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                                        if (response.isSuccessful() && response.body() != null) {
 
-                        // Liga os TextViews
-                        TextView tvValorCoruja = findViewById(R.id.tvValorCoruja);
-                        TextView tvValorFederal = findViewById(R.id.tvValorFederal);
-                        TextView tvLimiteAposta = findViewById(R.id.tvLimiteAposta);
-                        TextView tvStatusCredito = findViewById(R.id.tvStatusCredito);
+                                            // Pega os extras da Intent
+                                            float valorTotalGeradoCOR = response1.body().getValorTotalGeradoCORLoteriaAtual();
+                                            float valorTotalGeradoDF = response1.body().getValorTotalGeradoDFLoteriaAtual();
 
-                        // Monta os textos
-                        tvValorCoruja.setText("Você gerou R$ " + valorTotalGeradoCOR + " em bilhetes Coruja");
-                        tvValorFederal.setText("Você gerou R$ " + valorTotalGeradoDF + " em bilhetes Federal");
-                        podefazer = limiteAposta - (valorTotalGeradoCOR+valorTotalGeradoDF);
-                        tvLimiteAposta.setText("Totalizando R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF));
+                                            float valorRecolhidoVendedor = response1.body().getVendedor().calcularSaldoPorVendedor(response.body().getItens());
+                                            limiteAposta = response1.body().getVendedor().getLimiteAposta();
 
-                        Log.d("buceta", "valorTotalGeradoCOR: " + valorTotalGeradoCOR + " " + "valorTotalGeradoDF: " + valorTotalGeradoDF);
+                                            // Liga os TextViews
+                                            TextView tvValorCoruja = findViewById(R.id.tvValorCoruja);
+                                            TextView tvValorFederal = findViewById(R.id.tvValorFederal);
+                                            TextView tvLimiteAposta = findViewById(R.id.tvLimiteAposta);
+                                            TextView tvStatusCredito = findViewById(R.id.tvStatusCredito);
 
-                        somaBilhetes = valorTotalGeradoCOR + valorTotalGeradoDF;
 
-                        Log.d("buceta", "somaBilhetes: " + somaBilhetes + " " + "limiteAposta: " + limiteAposta);
+                                            float saldo_pode_fazer_loteria = (valorTotalGeradoCOR + valorTotalGeradoDF) - valorRecolhidoVendedor;
 
-                        if (somaBilhetes < limiteAposta) {
-                            tvStatusCredito.setText("Você está dentro do seu limite de aposta.");
-                            tvStatusCredito.setTextColor(Color.BLACK);
-                        } else {
-                            tvStatusCredito.setText("Você ultrapassou o seu limite de aposta!");
-                            tvStatusCredito.setTextColor(Color.RED);
-                        }
+                                            // Monta os textos
+                                            tvValorCoruja.setText("SALDO DE APOSTAS: R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF) + "\nem bilhetes Coruja e Federal");
+                                            tvValorFederal.setVisibility(View.GONE);
+                                            tvLimiteAposta.setVisibility(View.GONE);
+                                            podefazer = limiteAposta - (saldo_pode_fazer_loteria);
+                                            //tvLimiteAposta.setText("Saldo Loteria: R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF) + "\nSaldo Recolhido: R$ " + valorRecolhidoVendedor);
+
+
+
+                                            somaBilhetes = saldo_pode_fazer_loteria;
+
+                                            Log.d("buceta", "somaBilhetes: " + somaBilhetes + " " + "limiteAposta: " + limiteAposta);
+
+                                            if (somaBilhetes < limiteAposta) {
+                                                tvStatusCredito.setText("Você está dentro do seu limite de aposta.");
+                                                tvStatusCredito.setTextColor(Color.BLACK);
+                                                tvStatusCredito.setVisibility(View.GONE);
+                                            } else {
+                                                tvStatusCredito.setText("Você ultrapassou o seu limite de aposta!");
+                                                tvStatusCredito.setTextColor(Color.RED);
+                                            }
+
+
+
+                                        } else {
+                                            Toast.makeText(SelectLoteriaActivity.this, response.message(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+                                        Toast.makeText(SelectLoteriaActivity.this, "Resposta inválida da API", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+
 
                     }
                 } else {

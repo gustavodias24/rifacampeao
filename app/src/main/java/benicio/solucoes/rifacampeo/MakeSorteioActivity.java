@@ -235,12 +235,26 @@ public class MakeSorteioActivity extends AppCompatActivity {
         });
     }
 
+    public void showMessage(String msg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(msg);
+        builder.setCancelable(true);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
     public void addNumero() {
 
         if (inFlight) return;
         
         if ( valorTotalBilhete >= getIntent().getExtras().getFloat("podefazer", 0)){
-            Toast.makeText(this, "Limite atingindo!", Toast.LENGTH_SHORT).show();
+            showMessage( "Limite atingindo!");
             Log.d("buceta", "valorTotalBilhete: " + valorTotalBilhete + " podefazer: " + getIntent().getExtras().getFloat("podefazer", 0));
             return;
         }
@@ -282,9 +296,9 @@ public class MakeSorteioActivity extends AppCompatActivity {
                                     adapterNumero.notifyDataSetChanged();
                                     atualizarPrecoBilhete(1);
                                 }else{
-                                    Toast.makeText(MakeSorteioActivity.this, "Você já inseriu esse número!", Toast.LENGTH_SHORT).show();
+                                    showMessage("Você já inseriu esse número!");
                                 }
-                                Toast.makeText(MakeSorteioActivity.this, "Número adicionado!", Toast.LENGTH_SHORT).show();
+                                showMessage("Número adicionado!");
                             }
                         }
 

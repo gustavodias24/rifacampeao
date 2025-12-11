@@ -6,8 +6,12 @@ public class ResponseSimple {
 
     VendedorModel vendedor = new VendedorModel();
 
-    int valorTotalGeradoCOR = 0;
-    int valorTotalGeradoDF = 0;
+    float valorTotalGeradoCOR = 0;
+    float valorTotalGeradoDF = 0;
+
+    float valorTotalGeradoDFLoteriaAtual = 0;
+    float valorTotalGeradoCORLoteriaAtual = 0;
+
 
 
     public VendedorModel getVendedor() {
@@ -16,6 +20,22 @@ public class ResponseSimple {
 
     public void setVendedor(VendedorModel vendedor) {
         this.vendedor = vendedor;
+    }
+
+    public float getValorTotalGeradoDFLoteriaAtual() {
+        return valorTotalGeradoDFLoteriaAtual;
+    }
+
+    public void setValorTotalGeradoDFLoteriaAtual(float valorTotalGeradoDFLoteriaAtual) {
+        this.valorTotalGeradoDFLoteriaAtual = valorTotalGeradoDFLoteriaAtual;
+    }
+
+    public float getValorTotalGeradoCORLoteriaAtual() {
+        return valorTotalGeradoCORLoteriaAtual;
+    }
+
+    public void setValorTotalGeradoCORLoteriaAtual(float valorTotalGeradoCORLoteriaAtual) {
+        this.valorTotalGeradoCORLoteriaAtual = valorTotalGeradoCORLoteriaAtual;
     }
 
     public String getMsg() {
@@ -29,19 +49,19 @@ public class ResponseSimple {
     public ResponseSimple() {
     }
 
-    public int getValorTotalGeradoCOR() {
+    public float getValorTotalGeradoCOR() {
         return valorTotalGeradoCOR;
     }
 
-    public void setValorTotalGeradoCOR(int valorTotalGeradoCOR) {
+    public void setValorTotalGeradoCOR(float valorTotalGeradoCOR) {
         this.valorTotalGeradoCOR = valorTotalGeradoCOR;
     }
 
-    public int getValorTotalGeradoDF() {
+    public float getValorTotalGeradoDF() {
         return valorTotalGeradoDF;
     }
 
-    public void setValorTotalGeradoDF(int valorTotalGeradoDF) {
+    public void setValorTotalGeradoDF(float valorTotalGeradoDF) {
         this.valorTotalGeradoDF = valorTotalGeradoDF;
     }
 

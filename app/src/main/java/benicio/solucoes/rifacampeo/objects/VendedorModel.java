@@ -64,20 +64,20 @@ public class VendedorModel {
             }
         }
 
-        return totalRecolhido - totalPago;
+        return totalRecolhido ;//- totalPago;
     }
 
     public String toStringVendedor(List<RecolheuModel> recolhimentos) {
-
-        float saldoTotal = calcularSaldoPorVendedor(recolhimentos) + getValor_bilhetes_gerados();
-
-        float comissaoGanha = (saldoTotal * comissao) / 100f;
-        float saldo = saldoTotal - comissaoGanha;
+        float comissaoValor =(getValor_bilhetes_gerados() * ((float) comissao /100));
+        float saldoRecolhido = calcularSaldoPorVendedor(recolhimentos) ;//+ getValor_bilhetes_gerados();
+        float saldoAtual = (getValor_bilhetes_gerados() - comissaoValor) - saldoRecolhido;
+//        float comissaoGanha = (saldoTotal * comissao) / 100f;
+//        float saldo = saldoTotal - comissaoGanha;
 
         Locale ptBr = new Locale("pt", "BR");
-        totalFmt = String.format(ptBr, "R$ %.2f", saldoTotal);
-        comissaoFmt = String.format(ptBr, "R$ %.2f", comissaoGanha);
-        saldoFmt = String.format(ptBr, "R$ %.2f", saldo);
+//        totalFmt = String.format(ptBr, "R$ %.2f", saldoTotal);
+//        comissaoFmt = String.format(ptBr, "R$ %.2f", comissaoGanha);
+//        saldoFmt = String.format(ptBr, "R$ %.2f", saldo);
 
         return "<h2>" + nome + "</h2>" +
                 "<br>" +
@@ -89,10 +89,11 @@ public class VendedorModel {
                 "<b>Número Celular:</b> " + numeroCelular + "<br><br>" +
 
                 // Linha menor para não quebrar
-                "<small>Total " + totalFmt + " | Comissão " + comissaoFmt + "</small><br>" +
+                "<small>Valor da Comissão: R$" + comissaoValor + "</small><br>"+
+                "<small>Saldo de Todas as Loterias: R$" + getValor_bilhetes_gerados() + "</small><br>"+
+                "<small>Saldo de Todos os Recolhimentos: R$" + saldoRecolhido + "</small><br><br>"+
+                "<big>Saldo Loterial Atual: R$" + saldoAtual + "</big><br>" ;
 
-                // Saldo maior e em negrito
-                "<b><big>Saldo " + saldoFmt + "</big></b><br>";
     }
 
     public VendedorModel(String numeroCelular, String nome, String id, String senha, String despesas, String idSmartphone, int comissao, boolean ativado, String documento, int limiteAposta) {
