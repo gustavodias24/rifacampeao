@@ -66,6 +66,16 @@
                 android:scaleY="0.87" />
 
             <!-- RESUMO DOS VALORES -->
+
+            <TextView
+                android:id="@+id/limiteString"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Você ultrapassou o seu limite de aposta!"
+                android:textColor="#FF0000"
+                android:textStyle="bold"
+                android:visibility="gone" />
             <TextView
                 android:id="@+id/tvValorCoruja"
                 android:layout_width="match_parent"
@@ -83,26 +93,10 @@
                 android:gravity="center"
                 android:text="Carregando..."
                 android:textColor="#000000"
+                android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvLimiteAposta"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Carregando..."
-                android:textColor="#000000"
-                android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvStatusCredito"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="center"
-                android:text="Carregando..."
-                android:textColor="#000000"
-                android:textStyle="bold" />
         </LinearLayout>
 
 

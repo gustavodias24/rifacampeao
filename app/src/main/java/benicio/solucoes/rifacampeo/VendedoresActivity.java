@@ -118,11 +118,11 @@ public class VendedoresActivity extends AppCompatActivity {
 
         });
 
-        mainBinding.recolhimento.setOnClickListener(v2 -> {
-            Intent i = new Intent(this, RecolhimentoActivity.class);
-            i.putExtra("recolhedor", false);
-            startActivity(i);
-        });
+//        mainBinding.recolhimento.setOnClickListener(v2 -> {
+//            Intent i = new Intent(this, RecolhimentoActivity.class);
+//            i.putExtra("recolhedor", false);
+//            startActivity(i);
+//        });
     }
 
     @Override

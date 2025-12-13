@@ -27,6 +27,7 @@ import benicio.solucoes.rifacampeo.databinding.ActivityMakeSorteioBinding;
 import benicio.solucoes.rifacampeo.databinding.ActivitySelectLoteriaBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.DateLimitModel;
+import benicio.solucoes.rifacampeo.objects.RecolheuModel;
 import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
 import benicio.solucoes.rifacampeo.objects.ResponseSimple;
 import benicio.solucoes.rifacampeo.objects.RetornoModel;
@@ -37,12 +38,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SelectLoteriaActivity extends AppCompatActivity {
-
+    String TAG = "buceta";
     private ActivitySelectLoteriaBinding selectLoteriaBinding;
     float somaBilhetes = 0.0f;
     int limiteAposta = 0;
 
     float podefazer = 0.0f;
+
+    float saldoVendedor = 0.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,27 +56,31 @@ public class SelectLoteriaActivity extends AppCompatActivity {
 
 
         selectLoteriaBinding.button7.setOnClickListener(v -> {
-            Log.d("buceta", "somaBilhetes: " + somaBilhetes + " " + "limiteAposta: " + limiteAposta);
-            if (limiteAposta <= somaBilhetes) {
+            if (limiteAposta <= somaBilhetes && saldoVendedor > 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectLoteriaActivity.this);
                 builder.setTitle("Atenção");
                 builder.setMessage("Você não pode apostar, pois já atingiu o seu limite de crédito.");
                 builder.setPositiveButton("OK", null);
                 AlertDialog dialog = builder.create();
                 dialog.show();
+
+                selectLoteriaBinding.limiteString.setVisibility(View.VISIBLE);
             } else {
                 got_make("COR");
             }
         });
 
         selectLoteriaBinding.button8.setOnClickListener(v -> {
-            if (limiteAposta <= somaBilhetes) {
+            if (limiteAposta <= somaBilhetes && saldoVendedor > 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectLoteriaActivity.this);
                 builder.setTitle("Atenção");
                 builder.setMessage("Você não pode apostar, pois já atingiu o seu limite de crédito.");
                 builder.setPositiveButton("OK", null);
                 AlertDialog dialog = builder.create();
                 dialog.show();
+
+                selectLoteriaBinding.limiteString.setVisibility(View.VISIBLE);
+
             } else {
                 got_make("FD");
             }
@@ -98,6 +105,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                         RetrofitUtils.getApiService().retornar_recolhimento(
                                         null, null, null, null, 999999999, 1)
                                 .enqueue(new Callback<RecolhimentoResponse>() {
+                                    @SuppressLint("SetTextI18n")
                                     @Override
                                     public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
                                         if (response.isSuccessful() && response.body() != null) {
@@ -105,41 +113,48 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                                             // Pega os extras da Intent
                                             float valorTotalGeradoCOR = response1.body().getValorTotalGeradoCORLoteriaAtual();
                                             float valorTotalGeradoDF = response1.body().getValorTotalGeradoDFLoteriaAtual();
+                                            float valorTotalGeradoDFLoteriaAtual = response1.body().getValorTotalGeradoDFLoteriaAtual();
+                                            float valorTotalGeradoCORLoteriaAtual = response1.body().getValorTotalGeradoCORLoteriaAtual();
 
-                                            float valorRecolhidoVendedor = response1.body().getVendedor().calcularSaldoPorVendedor(response.body().getItens());
+                                            float valorRecolhidoVendedor  = 0.0f;
+                                            for (RecolheuModel recolheuModel : response.body().getItens()){
+                                                if ( recolheuModel.getVendedor().equals(response1.body().getVendedor().getNome())){
+                                                    valorRecolhidoVendedor += recolheuModel.getValor();
+                                                }
+                                            }
+
                                             limiteAposta = response1.body().getVendedor().getLimiteAposta();
 
                                             // Liga os TextViews
                                             TextView tvValorCoruja = findViewById(R.id.tvValorCoruja);
                                             TextView tvValorFederal = findViewById(R.id.tvValorFederal);
-                                            TextView tvLimiteAposta = findViewById(R.id.tvLimiteAposta);
-                                            TextView tvStatusCredito = findViewById(R.id.tvStatusCredito);
 
 
-                                            float saldo_pode_fazer_loteria = (valorTotalGeradoCOR + valorTotalGeradoDF) - valorRecolhidoVendedor;
+                                            float saldo_pode_fazer_loteria = (valorTotalGeradoCORLoteriaAtual + valorTotalGeradoDFLoteriaAtual);// - valorRecolhidoVendedor;
 
+                                            saldoVendedor = ((valorTotalGeradoDF + valorTotalGeradoCOR) - ((valorTotalGeradoDF + valorTotalGeradoCOR) * ((float) response1.body().getVendedor().getComissao() / 100))) - valorRecolhidoVendedor;
+
+                                            Log.d("buceta", "valorTotalGeradoDF: " + valorTotalGeradoDF + " valorTotalGeradoCOR: " + valorTotalGeradoCOR + " valorRecolhidoVendedor: " + valorRecolhidoVendedor);
                                             // Monta os textos
-                                            tvValorCoruja.setText("SALDO DE APOSTAS: R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF) + "\nem bilhetes Coruja e Federal");
-                                            tvValorFederal.setVisibility(View.GONE);
-                                            tvLimiteAposta.setVisibility(View.GONE);
+                                            tvValorCoruja.setText(
+                                                    "SALDO DE APOSTAS CORUJA: R$ " + valorTotalGeradoCOR +
+                                                            "\nSALDO DE APOSTAS FEDERAL: R$ " + valorTotalGeradoDF);
+                                            if ( saldoVendedor < 0){
+                                                tvValorFederal.setText("SALDO DEVE: R$ 0");
+                                            }else{
+                                                tvValorFederal.setText("SALDO DEVE: R$ " + saldoVendedor);
+                                            }
                                             podefazer = limiteAposta - (saldo_pode_fazer_loteria);
                                             //tvLimiteAposta.setText("Saldo Loteria: R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF) + "\nSaldo Recolhido: R$ " + valorRecolhidoVendedor);
 
 
-
                                             somaBilhetes = saldo_pode_fazer_loteria;
 
-                                            Log.d("buceta", "somaBilhetes: " + somaBilhetes + " " + "limiteAposta: " + limiteAposta);
+                                            Log.d("buceta", "somaBilhetes: " + somaBilhetes + " " + "limiteAposta: " + limiteAposta + "\n" + "saldoVendedor: " + saldoVendedor);
 
-                                            if (somaBilhetes < limiteAposta) {
-                                                tvStatusCredito.setText("Você está dentro do seu limite de aposta.");
-                                                tvStatusCredito.setTextColor(Color.BLACK);
-                                                tvStatusCredito.setVisibility(View.GONE);
-                                            } else {
-                                                tvStatusCredito.setText("Você ultrapassou o seu limite de aposta!");
-                                                tvStatusCredito.setTextColor(Color.RED);
+                                            if ( limiteAposta <= somaBilhetes && saldoVendedor > 0){
+                                                selectLoteriaBinding.limiteString.setVisibility(View.VISIBLE);
                                             }
-
 
 
                                         } else {
@@ -152,7 +167,6 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                                         Toast.makeText(SelectLoteriaActivity.this, "Resposta inválida da API", Toast.LENGTH_SHORT).show();
                                     }
                                 });
-
 
 
                     }

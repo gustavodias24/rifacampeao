@@ -237,6 +237,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
 
     public void showMessage(String msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("AVISO");
         builder.setMessage(msg);
         builder.setCancelable(true);
 
@@ -298,7 +299,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
                                 }else{
                                     showMessage("Você já inseriu esse número!");
                                 }
-                                showMessage("Número adicionado!");
+                                //showMessage("Número adicionado!");
                             }
                         }
 
