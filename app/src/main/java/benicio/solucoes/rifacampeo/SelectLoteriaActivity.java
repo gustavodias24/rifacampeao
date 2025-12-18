@@ -111,8 +111,8 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                                         if (response.isSuccessful() && response.body() != null) {
 
                                             // Pega os extras da Intent
-                                            float valorTotalGeradoCOR = response1.body().getValorTotalGeradoCORLoteriaAtual();
-                                            float valorTotalGeradoDF = response1.body().getValorTotalGeradoDFLoteriaAtual();
+                                            float valorTotalGeradoCOR = response1.body().getValorTotalGeradoCOR();
+                                            float valorTotalGeradoDF = response1.body().getValorTotalGeradoDF();
                                             float valorTotalGeradoDFLoteriaAtual = response1.body().getValorTotalGeradoDFLoteriaAtual();
                                             float valorTotalGeradoCORLoteriaAtual = response1.body().getValorTotalGeradoCORLoteriaAtual();
 
@@ -137,8 +137,8 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                                             Log.d("buceta", "valorTotalGeradoDF: " + valorTotalGeradoDF + " valorTotalGeradoCOR: " + valorTotalGeradoCOR + " valorRecolhidoVendedor: " + valorRecolhidoVendedor);
                                             // Monta os textos
                                             tvValorCoruja.setText(
-                                                    "SALDO DE APOSTAS CORUJA: R$ " + valorTotalGeradoCOR +
-                                                            "\nSALDO DE APOSTAS FEDERAL: R$ " + valorTotalGeradoDF);
+                                                    "SALDO DE APOSTAS CORUJA: R$ " + valorTotalGeradoCORLoteriaAtual +
+                                                            "\nSALDO DE APOSTAS FEDERAL: R$ " + valorTotalGeradoDFLoteriaAtual);
                                             if ( saldoVendedor < 0){
                                                 tvValorFederal.setText("SALDO DEVE: R$ 0");
                                             }else{
