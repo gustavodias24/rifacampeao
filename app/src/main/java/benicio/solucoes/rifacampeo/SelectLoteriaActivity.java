@@ -20,8 +20,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import benicio.solucoes.rifacampeo.databinding.ActivityMakeSorteioBinding;
 import benicio.solucoes.rifacampeo.databinding.ActivitySelectLoteriaBinding;
@@ -134,15 +136,20 @@ public class SelectLoteriaActivity extends AppCompatActivity {
 
                                             saldoVendedor = ((valorTotalGeradoDF + valorTotalGeradoCOR) - ((valorTotalGeradoDF + valorTotalGeradoCOR) * ((float) response1.body().getVendedor().getComissao() / 100))) - valorRecolhidoVendedor;
 
+                                            NumberFormat nf = NumberFormat.getNumberInstance(new Locale("pt", "BR"));
+                                            nf.setMinimumFractionDigits(2);
+                                            nf.setMaximumFractionDigits(2);
+
                                             Log.d("buceta", "valorTotalGeradoDF: " + valorTotalGeradoDF + " valorTotalGeradoCOR: " + valorTotalGeradoCOR + " valorRecolhidoVendedor: " + valorRecolhidoVendedor);
                                             // Monta os textos
                                             tvValorCoruja.setText(
-                                                    "SALDO DE APOSTAS CORUJA: R$ " + valorTotalGeradoCORLoteriaAtual +
-                                                            "\nSALDO DE APOSTAS FEDERAL: R$ " + valorTotalGeradoDFLoteriaAtual);
+                                                    "SALDO DE APOSTAS CORUJA: R$ " + nf.format(valorTotalGeradoCORLoteriaAtual) +
+                                                            "\nSALDO DE APOSTAS FEDERAL: R$ " + nf.format(valorTotalGeradoDFLoteriaAtual) +
+                                                    "\nTOTAL DE APOSTAS: R$ " + nf.format((valorTotalGeradoCORLoteriaAtual+valorTotalGeradoDFLoteriaAtual)));
                                             if ( saldoVendedor < 0){
                                                 tvValorFederal.setText("SALDO DEVE: R$ 0");
                                             }else{
-                                                tvValorFederal.setText("SALDO DEVE: R$ " + saldoVendedor);
+                                                tvValorFederal.setText("SALDO DEVE: R$ " + nf.format(saldoVendedor));
                                             }
                                             podefazer = limiteAposta - (saldo_pode_fazer_loteria);
                                             //tvLimiteAposta.setText("Saldo Loteria: R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF) + "\nSaldo Recolhido: R$ " + valorRecolhidoVendedor);
