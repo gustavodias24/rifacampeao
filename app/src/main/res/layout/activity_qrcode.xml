@@ -23,7 +23,7 @@
             android:background="@drawable/print"
             android:backgroundTint="#000000"
             android:clickable="true"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/compartilharZap"
             app:layout_constraintStart_toStartOf="parent" />
 

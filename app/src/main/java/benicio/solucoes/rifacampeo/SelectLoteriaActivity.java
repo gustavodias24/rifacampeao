@@ -120,7 +120,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
 
                                             float valorRecolhidoVendedor  = 0.0f;
                                             for (RecolheuModel recolheuModel : response.body().getItens()){
-                                                if ( recolheuModel.getVendedor().equals(response1.body().getVendedor().getNome())){
+                                                if ( recolheuModel.getVendedor().trim().equals(response1.body().getVendedor().getNome().trim())){
                                                     valorRecolhidoVendedor += recolheuModel.getValor();
                                                 }
                                             }
