@@ -69,39 +69,16 @@ public class QRCodeActivity extends AppCompatActivity {
 
         mainBinding.print.setOnClickListener(v -> {
             Log.d("amopussy", html);
-            if (printerBluetooth == null)
-                acharPrinterBluetooth();
-            if (printerBluetooth == null)
+
+            if (printerBluetooth == null) acharPrinterBluetooth();
+            if (printerBluetooth == null) return;
+
+            if (html == null || html.trim().isEmpty()) {
+                Toast.makeText(this, "Carregando... Tente novamente!", Toast.LENGTH_LONG).show();
                 return;
-
-            BluetoothSocket impressora = null;
-            try {
-                impressora = printerBluetooth.createInsecureRfcommSocketToServiceRecord(UUID.randomUUID());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
 
-            try {
-                impressora.connect();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                if (!html.isEmpty()) {
-                    PrinterTicketUtils.printTicketFromHtml(this, printerBluetooth, html);
-                } else {
-                    Toast.makeText(this, "Carregando...", Toast.LENGTH_SHORT).show();
-                    Toast.makeText(this, "Tente Novamente!", Toast.LENGTH_LONG).show();
-                }
-
-            } finally {
-                try {
-                    impressora.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
+            PrinterTicketUtils.printTicketFromHtml(this, printerBluetooth, html);
         });
 
         Bundle b = getIntent().getExtras();
