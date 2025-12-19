@@ -41,26 +41,15 @@ public class VendedorModel {
         if (recolhimentos == null || recolhimentos.isEmpty()) {
             return 0f;
         }
+        float totalRecolhido = 0.0f;
 
-        float totalRecolhido = 0f; // tipo 0
-        float totalPago = 0f;      // tipo 1
-
-        for (RecolheuModel r : recolhimentos) {
-            if (r == null) continue;
-
-            String vend = r.getVendedor();
-            if (vend == null) continue;
-
-            // compara ignorando maiúsculas/minúsculas
-            if (!vend.equalsIgnoreCase(getNome())) {
-                continue;
-            }
-
-            // tipo: 0 = Recolhimento | 1 = Pagamento
-            if (r.getTipo() == 0) {
-                totalRecolhido += r.getValor();
-            } else if (r.getTipo() == 1) {
-                totalPago += r.getValor();
+        for (RecolheuModel recolheuModel :  recolhimentos){
+            Log.d("buceta", "NomeRecolhimento: " + recolheuModel.getVendedor() + " NomeVendedor: " + getNome());
+            if (recolheuModel.getVendedor().trim().equals(getNome().trim())){
+                Log.d("buceta", "passou aqui, agora o tipo é: " +  recolheuModel.getTipo());
+                if ( recolheuModel.getTipo() == 0){
+                    totalRecolhido += recolheuModel.getValor();
+                }
             }
         }
 
@@ -70,6 +59,8 @@ public class VendedorModel {
     public String toStringVendedor(List<RecolheuModel> recolhimentos) {
         float comissaoValor =(getValor_bilhetes_gerados() * ((float) comissao /100));
         float saldoRecolhido = calcularSaldoPorVendedor(recolhimentos) ;//+ getValor_bilhetes_gerados();
+        String TAG = "buceta";
+        Log.d(TAG, "saldoRecolhido: " + saldoRecolhido + " lista recolhimentos: " + recolhimentos.size());
         float saldoAtual = (getValor_bilhetes_gerados() - comissaoValor) - saldoRecolhido;
 //        float comissaoGanha = (saldoTotal * comissao) / 100f;
 //        float saldo = saldoTotal - comissaoGanha;
