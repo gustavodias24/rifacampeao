@@ -41,12 +41,21 @@
             android:layout_height="wrap_content"
             android:text="Novo Vendedor" />
 
+
         <Button
-            android:visibility="gone"
+            android:id="@+id/recolhimento"
+            android:layout_width="match_parent"
+            android:textColor="@color/white"
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:layout_height="wrap_content"
+            android:text="recolhimento/pagamento" />
+
+        <Button
             android:id="@+id/relatoriovendedor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Relatório Vendedor" />
+            android:text="Relatório Vendedor"
+            android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvvendedores"

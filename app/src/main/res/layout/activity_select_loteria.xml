@@ -86,29 +86,29 @@
     <Button
         android:id="@+id/button7"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="180dp"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/btn_coruja"
         android:scaleX="0.85"
         android:scaleY="0.85"
-        app:layout_constraintTop_toBottomOf="@id/textView"
         app:layout_constraintBottom_toTopOf="@id/button8"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/textView" />
 
     <!-- Botão Federal (altura flexível) -->
     <Button
         android:id="@+id/button8"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="180dp"
         android:layout_marginBottom="12dp"
         android:background="@drawable/btn_federal"
         android:scaleX="0.90"
         android:scaleY="0.90"
-        app:layout_constraintTop_toBottomOf="@id/button7"
         app:layout_constraintBottom_toTopOf="@id/limiteString"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/button7" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

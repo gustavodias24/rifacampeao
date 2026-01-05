@@ -37,11 +37,12 @@ public class VendedorModel {
 
     String totalFmt, comissaoFmt,saldoFmt ="";
 
-    public float calcularSaldoPorVendedor(List<RecolheuModel> recolhimentos) {
+    public TotalRecolhimentoPagamento calcularSaldoPorVendedor(List<RecolheuModel> recolhimentos) {
         if (recolhimentos == null || recolhimentos.isEmpty()) {
-            return 0f;
+            return new TotalRecolhimentoPagamento(0f,0f);
         }
         float totalRecolhido = 0.0f;
+        float totalPagamento = 0.0f;
 
         for (RecolheuModel recolheuModel :  recolhimentos){
             Log.d("buceta", "NomeRecolhimento: " + recolheuModel.getVendedor() + " NomeVendedor: " + getNome());
@@ -49,16 +50,23 @@ public class VendedorModel {
                 Log.d("buceta", "passou aqui, agora o tipo é: " +  recolheuModel.getTipo());
                 if ( recolheuModel.getTipo() == 0){
                     totalRecolhido += recolheuModel.getValor();
+                }else{
+                    totalPagamento += recolheuModel.getValor();
                 }
             }
         }
 
-        return totalRecolhido ;//- totalPago;
+        return new TotalRecolhimentoPagamento(totalRecolhido, totalPagamento) ;//- totalPago;
     }
 
     public String toStringVendedor(List<RecolheuModel> recolhimentos) {
         float comissaoValor =(getValor_bilhetes_gerados() * ((float) comissao /100));
-        float saldoRecolhido = calcularSaldoPorVendedor(recolhimentos) ;//+ getValor_bilhetes_gerados();
+        TotalRecolhimentoPagamento totalRecolhimentoPagamento = calcularSaldoPorVendedor(recolhimentos);
+        float saldoPagemento = totalRecolhimentoPagamento.getTotalPagamento() ;//+ getValor_bilhetes_gerados();
+        float saldoRecolhido = totalRecolhimentoPagamento.getTotalRecolhido() ;//+ getValor_bilhetes_gerados();
+
+        saldoRecolhido = (saldoRecolhido - saldoPagemento);
+
         String TAG = "buceta";
         Log.d(TAG, "saldoRecolhido: " + saldoRecolhido + " lista recolhimentos: " + recolhimentos.size());
         float saldoAtual = (getValor_bilhetes_gerados() - comissaoValor) - saldoRecolhido;
@@ -82,7 +90,8 @@ public class VendedorModel {
                 // Linha menor para não quebrar
                 "<small>Valor da Comissão: R$" + comissaoValor + "</small><br>"+
                 "<small>Saldo de Todas as Loterias: R$" + getValor_bilhetes_gerados() + "</small><br>"+
-                "<small>Saldo de Todos os Recolhimentos: R$" + saldoRecolhido + "</small><br><br>"+
+                "<small>Saldo  Pagamentos: R$" + saldoPagemento + "</small><br>"+
+                "<small>Saldo  Recolhimentos - Pagamentos: R$" + saldoRecolhido + "</small><br><br>"+
                 "<big>Saldo Loterial Atual: R$" + saldoAtual + "</big><br>" ;
 
     }

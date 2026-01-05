@@ -181,7 +181,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
-            android:backgroundTint="@color/teal_200"
+            android:backgroundTint="@android:color/holo_green_dark"
             android:paddingVertical="12dp"
             android:text="Adicionar Recolhimento"
             android:textAllCaps="false" />

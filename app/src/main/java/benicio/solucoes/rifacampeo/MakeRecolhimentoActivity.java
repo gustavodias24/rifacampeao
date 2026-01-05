@@ -54,6 +54,11 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
         carregarVendedores();
 
         nomeRecolhedor = getIntent().getExtras().getString("recolhedor", "");
+        boolean isRecolhedor = getIntent().getExtras().getBoolean("isRecolhedor", false);
+
+        if (isRecolhedor){
+            mainBinding.rbPagamento.setVisibility(View.GONE);
+        }
         Log.d("buceta", "nomeRecolhedor: " + nomeRecolhedor);
 
         // seta o adapter no campo de vendedor

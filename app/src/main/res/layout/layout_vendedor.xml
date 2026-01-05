@@ -36,6 +36,8 @@
             android:layout_marginBottom="8dp" />
 
         <Button
+
+            android:visibility="gone"
             android:id="@+id/entrada_saida_vendedor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

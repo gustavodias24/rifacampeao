@@ -119,6 +119,7 @@ public class RecolhimentoActivity extends AppCompatActivity {
                     } else {
                         Intent i = new Intent(this, MakeRecolhimentoActivity.class);
                         i.putExtra("recolhedor", nomeRecolhedor);
+                        i.putExtra("isRecolhedor", b.getBoolean("recolhedor", false));
                         startActivity(i);
                     }
                 }
