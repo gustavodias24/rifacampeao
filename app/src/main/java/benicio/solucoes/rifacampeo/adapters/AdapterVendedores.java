@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import benicio.solucoes.rifacampeo.R;
+import benicio.solucoes.rifacampeo.VendedoresActivity;
 import benicio.solucoes.rifacampeo.databinding.DialogPagamentoRecebimentoBinding;
 import benicio.solucoes.rifacampeo.databinding.LayoutInputVendedorBinding;
 import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
@@ -121,6 +122,7 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
                         public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
                             if (response.isSuccessful()) {
                                 Toast.makeText(a, "Vendedor deletado", Toast.LENGTH_SHORT).show();
+                                VendedoresActivity.listarVendedores(a);
 
                                 // remove da lista filtrada
                                 lista.remove(pos);
@@ -190,6 +192,7 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
                         syncVendedorNaListaOriginal(vendedor);
                         notifyDataSetChanged();
                         d_pagamento.dismiss();
+                        VendedoresActivity.listarVendedores(a);
                     }
 
                     @Override
@@ -292,9 +295,10 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
                             public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
                                 if (response.isSuccessful()) {
                                     Toast.makeText(a, "Atualizado!", Toast.LENGTH_SHORT).show();
+                                    VendedoresActivity.listarVendedores(a);
 
                                     // atualiza na lista filtrada
-                                    lista.set(pos, vendedorAtualizado);
+                                    //lista.set(pos, vendedorAtualizado);
                                     // atualiza na lista original
                                     syncVendedorNaListaOriginal(vendedorAtualizado);
 

@@ -7,10 +7,9 @@
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-
         android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/marrom"
         tools:context=".MenuAcvity">
 
@@ -18,7 +17,7 @@
             android:id="@+id/imageView"
             android:layout_width="0dp"
             android:layout_height="130dp"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="8dp"
             android:scaleType="fitXY"
             android:src="@drawable/logo"
             app:layout_constraintEnd_toEndOf="parent"
@@ -29,107 +28,104 @@
             android:id="@+id/imageView2"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView"
-            app:layout_constraintVertical_bias="1.0"
             app:srcCompat="@drawable/bonequin" />
 
-        <LinearLayout
-            android:id="@+id/linearLayout2"
-            android:layout_width="0dp"
-            android:layout_height="66dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+        <!-- Linha (row) dos EditTexts usando Constraint + Chain -->
+        <EditText
+            android:id="@+id/et1"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/input_background"
             android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toTopOf="@+id/guideline"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toStartOf="@+id/et2"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+
+        <EditText
+            android:id="@+id/et2"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/input_background"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toStartOf="@+id/et3"
+            app:layout_constraintStart_toEndOf="@+id/et1"
+            app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+
+        <EditText
+            android:id="@+id/et3"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/input_background"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toStartOf="@+id/et4"
+            app:layout_constraintStart_toEndOf="@+id/et2"
+            app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+
+        <EditText
+            android:id="@+id/et4"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/input_background"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toStartOf="@+id/et5"
+            app:layout_constraintStart_toEndOf="@+id/et3"
+            app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+
+        <EditText
+            android:id="@+id/et5"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/input_background"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toStartOf="@+id/et6"
+            app:layout_constraintStart_toEndOf="@+id/et4"
+            app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+
+        <EditText
+            android:id="@+id/et6"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/input_background"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <!-- 5 campos para código -->
-            <EditText
-                android:id="@+id/et1"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/input_background"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="24sp" />
-
-            <EditText
-                android:id="@+id/et2"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/input_background"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="24sp" />
-
-            <EditText
-                android:id="@+id/et3"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/input_background"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="24sp" />
-
-            <EditText
-                android:id="@+id/et4"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/input_background"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="24sp" />
-
-            <EditText
-                android:id="@+id/et5"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/input_background"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="24sp" />
-
-            <EditText
-                android:id="@+id/et6"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/input_background"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="24sp" />
-
-        </LinearLayout>
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.6" />
+            app:layout_constraintStart_toEndOf="@+id/et5"
+            app:layout_constraintTop_toBottomOf="@+id/imageView2" />
 
         <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:text="V1"
+            android:text="@string/app_version"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

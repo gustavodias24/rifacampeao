@@ -35,9 +35,10 @@
         android:textColor="#000000"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/imageView6"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/imageView6" />
 
     <!-- Mensagem de limite -->
     <TextView
@@ -92,6 +93,7 @@
         android:background="@drawable/btn_coruja"
         android:scaleX="0.85"
         android:scaleY="0.85"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/button8"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

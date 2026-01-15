@@ -111,8 +111,8 @@ public class MenuAcvity extends AppCompatActivity {
                         + et6.getText().toString();
 
 //        } else if (code.equals("426759")) {
-        if (code.equals("111111")) {
-            startActivity(new Intent(this, AdminMasterActivity.class));
+        if (code.equals("426759")) {
+            pedirSegundaSenha();
         }
         else if (code.equals("565656")){
             Intent i = new Intent(this, RecolhimentoActivity.class);
@@ -163,5 +163,49 @@ public class MenuAcvity extends AppCompatActivity {
         et5.setText("");
         et6.setText("");
         ;
+    }
+
+    private void pedirSegundaSenha() {
+        final EditText input = new EditText(this);
+        input.setHint("Digite a segunda senha");
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT |
+                android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setSingleLine(true);
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Confirmação de Admin")
+                .setMessage("Informe a segunda senha para continuar")
+                .setView(input)
+                .setCancelable(false)
+                .setPositiveButton("Entrar", null) // vou sobrescrever depois pra não fechar sozinho
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create();
+
+        androidx.appcompat.app.AlertDialog dialog =
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Confirmação de Admin")
+                        .setMessage("Informe a segunda senha para continuar")
+                        .setView(input)
+                        .setCancelable(false)
+                        .setPositiveButton("Entrar", null)
+                        .setNegativeButton("Cancelar", (d, w) -> d.dismiss())
+                        .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+                    .setOnClickListener(v -> {
+                        String senha = input.getText().toString().trim();
+
+                        if (senha.equals("@4267#")) {
+                            dialog.dismiss();
+                            startActivity(new Intent(this, AdminMasterActivity.class));
+                        } else {
+                            input.setError("Senha incorreta");
+                            // não fecha o dialog
+                        }
+                    });
+        });
+
+        dialog.show();
     }
 }

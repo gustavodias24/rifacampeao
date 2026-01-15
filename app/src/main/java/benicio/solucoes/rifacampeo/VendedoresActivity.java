@@ -1,6 +1,7 @@
 package benicio.solucoes.rifacampeo;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -47,13 +48,13 @@ import retrofit2.Response;
 
 public class VendedoresActivity extends AppCompatActivity {
 
-    private AlertDialog loadingDialog;
+    public static AlertDialog loadingDialog;
 
-    private Dialog dialogVendedor;
-    private ActivityVendedoresBinding mainBinding;
-    private List<VendedorModel> vendedores = new ArrayList<>();
-    private AdapterVendedores adapterVendedores;
-    private RecyclerView rvVendedores;
+    public static Dialog dialogVendedor;
+    public static ActivityVendedoresBinding mainBinding;
+    public static List<VendedorModel> vendedores = new ArrayList<>();
+    public static AdapterVendedores adapterVendedores;
+    public static RecyclerView rvVendedores;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +90,7 @@ public class VendedoresActivity extends AppCompatActivity {
 
         mainBinding.relatoriovendedor.setOnClickListener(v -> {
 
-            showLoadingDialog();
+            showLoadingDialog(this);
 
             RetrofitUtils.getApiService().returnBilhetes(3, new QueryModelEmpty())
                     .enqueue(new Callback<List<BilheteModel>>() {
@@ -130,11 +131,11 @@ public class VendedoresActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        listarVendedores();
+        listarVendedores(this);
     }
 
-    private void listarVendedores() {
-        showLoadingDialog();
+    public static void listarVendedores(Activity context) {
+        showLoadingDialog(context);
 
         vendedores.clear();
 
@@ -153,8 +154,8 @@ public class VendedoresActivity extends AppCompatActivity {
                             vendedores.addAll(response.body());
 
                             if (adapterVendedores == null) {
-                                adapterVendedores = new AdapterVendedores(vendedores, VendedoresActivity.this);
-                                rvVendedores.setLayoutManager(new LinearLayoutManager(VendedoresActivity.this));
+                                adapterVendedores = new AdapterVendedores(vendedores, context);
+                                rvVendedores.setLayoutManager(new LinearLayoutManager(context));
                                 rvVendedores.setHasFixedSize(true);
                                 rvVendedores.setAdapter(adapterVendedores);
                             } else {
@@ -166,7 +167,7 @@ public class VendedoresActivity extends AppCompatActivity {
                             adapterVendedores.filtrarPorNome(textoFiltro);
 
                         } else {
-                            Toast.makeText(VendedoresActivity.this,
+                            Toast.makeText(context,
                                     "Erro de conexão ao carregar vendedores",
                                     Toast.LENGTH_SHORT).show();
                         }
@@ -175,7 +176,7 @@ public class VendedoresActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<List<VendedorModel>> call, Throwable throwable) {
                         hideLoadingDialog();
-                        Toast.makeText(VendedoresActivity.this,
+                        Toast.makeText(context,
                                 "Falha na requisição ao carregar vendedores",
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -218,14 +219,14 @@ public class VendedoresActivity extends AppCompatActivity {
                             Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ?
                                     inputVendedorBinding.edtComissao.getText().toString() : "0"),
                             inputVendedorBinding.radioAtivo.isChecked(),
-                            inputVendedorBinding.edtComissao.getText().toString(),
+                            inputVendedorBinding.edtDocumento.getText().toString(),
                             limiteAposta
                     )).enqueue(new Callback<RetornoModel>() {
                         @Override
                         public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
                             if (response.isSuccessful()) {
                                 Toast.makeText(VendedoresActivity.this, "Cadastrado!", Toast.LENGTH_SHORT).show();
-                                listarVendedores();
+                                listarVendedores(VendedoresActivity.this);
                                 dialogVendedor.dismiss();
                             } else {
                                 Toast.makeText(VendedoresActivity.this, "Problema de Conexão!", Toast.LENGTH_SHORT).show();
@@ -472,19 +473,19 @@ public class VendedoresActivity extends AppCompatActivity {
         }
     }
 
-    private void showLoadingDialog() {
+    public static void showLoadingDialog(Activity context) {
         if (loadingDialog != null && loadingDialog.isShowing()) return;
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setCancelable(false);
 
-        LinearLayout layout = new LinearLayout(this);
+        LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(60, 40, 60, 40);
         layout.setGravity(Gravity.CENTER);
 
-        ProgressBar progressBar = new ProgressBar(this);
-        TextView text = new TextView(this);
+        ProgressBar progressBar = new ProgressBar(context);
+        TextView text = new TextView(context);
         text.setText("Gerando relatório...\nAguarde.");
         text.setGravity(Gravity.CENTER);
         text.setPadding(0, 24, 0, 0);
@@ -498,7 +499,8 @@ public class VendedoresActivity extends AppCompatActivity {
         loadingDialog.show();
     }
 
-    private void hideLoadingDialog() {
+   public static void hideLoadingDialog() {
+
         if (loadingDialog != null && loadingDialog.isShowing()) {
             loadingDialog.dismiss();
         }
