@@ -92,6 +92,8 @@ public class RecolhimentoActivity extends AppCompatActivity {
             mainBinding.textRecolhedor.setVisibility(View.GONE);
             mainBinding.editTextRecolhedor.setVisibility(View.GONE);
             mainBinding.button9.setVisibility(View.GONE);
+        }else{
+            mainBinding.btnGerarRelatorio.setVisibility(View.GONE);
         }
 
         // Adapter para o AutoCompleteTextView de vendedor

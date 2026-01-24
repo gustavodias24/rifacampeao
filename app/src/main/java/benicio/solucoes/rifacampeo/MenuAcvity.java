@@ -1,5 +1,6 @@
 package benicio.solucoes.rifacampeo;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -76,10 +77,7 @@ public class MenuAcvity extends AppCompatActivity {
     }
 
     public String getDeviceUniqueId() {
-        return Settings.Secure.getString(
-                getContentResolver(),
-                Settings.Secure.ANDROID_ID
-        );
+        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
     private void setupEditTexts(EditText current, EditText next) {
@@ -102,24 +100,14 @@ public class MenuAcvity extends AppCompatActivity {
     }
 
     private void checkCode() {
-        String code =
-                et1.getText().toString()
-                        + et2.getText().toString()
-                        + et3.getText().toString()
-                        + et4.getText().toString()
-                        + et5.getText().toString()
-                        + et6.getText().toString();
+        String code = et1.getText().toString() + et2.getText().toString() + et3.getText().toString() + et4.getText().toString() + et5.getText().toString() + et6.getText().toString();
 
 //        } else if (code.equals("426759")) {
         if (code.equals("426759")) {
-            pedirSegundaSenha();
-        }
-        else if (code.equals("565656")){
-            Intent i = new Intent(this, RecolhimentoActivity.class);
-            i.putExtra("recolhedor", true);
-            startActivity(i);
-        }
-        else {
+            pedirSegundaSenha("@4267#");
+        } else if (code.equals("565656")) {
+            pedirSegundaSenha("@5656#");
+        } else {
             VendedorModel vendedorModel = new VendedorModel();
             vendedorModel.setSenha(code);
             vendedorModel.setSerial(getDeviceUniqueId());
@@ -162,50 +150,42 @@ public class MenuAcvity extends AppCompatActivity {
         et4.setText("");
         et5.setText("");
         et6.setText("");
-        ;
     }
 
-    private void pedirSegundaSenha() {
+    private void pedirSegundaSenha(String senhaBater) {
         final EditText input = new EditText(this);
         input.setHint("Digite a segunda senha");
-        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT |
-                android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         input.setSingleLine(true);
 
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Confirmação de Admin")
-                .setMessage("Informe a segunda senha para continuar")
-                .setView(input)
-                .setCancelable(false)
-                .setPositiveButton("Entrar", null) // vou sobrescrever depois pra não fechar sozinho
-                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                .create();
+        new androidx.appcompat.app.AlertDialog.Builder(this).setTitle("Confirmação de Admin").setMessage("Informe a segunda senha para continuar").setView(input).setCancelable(false).setPositiveButton("Entrar", null) // vou sobrescrever depois pra não fechar sozinho
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss()).create();
 
-        androidx.appcompat.app.AlertDialog dialog =
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("Confirmação de Admin")
-                        .setMessage("Informe a segunda senha para continuar")
-                        .setView(input)
-                        .setCancelable(false)
-                        .setPositiveButton("Entrar", null)
-                        .setNegativeButton("Cancelar", (d, w) -> d.dismiss())
-                        .create();
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this).setTitle("Confirmação de Admin").setMessage("Informe a segunda senha para continuar").setView(input).setCancelable(false).setPositiveButton("Entrar", null).setNegativeButton("Cancelar", (d, w) -> d.dismiss()).create();
 
         dialog.setOnShowListener(d -> {
-            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
-                    .setOnClickListener(v -> {
-                        String senha = input.getText().toString().trim();
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String senha = input.getText().toString().trim();
 
-                        if (senha.equals("@4267#")) {
-                            dialog.dismiss();
-                            startActivity(new Intent(this, AdminMasterActivity.class));
-                        } else {
-                            input.setError("Senha incorreta");
-                            // não fecha o dialog
-                        }
-                    });
+                if (senha.equals(senhaBater)) {
+                    dialog.dismiss();
+
+                    if (senhaBater.equals("@5656#")) {
+                        Intent i = new Intent(this, RecolhimentoActivity.class);
+                        i.putExtra("recolhedor", true);
+                        startActivity(i);
+                    } else if (senhaBater.equals("@4267#")) {
+                        startActivity(new Intent(this, AdminMasterActivity.class));
+                    }
+                } else {
+                    input.setError("Senha incorreta");
+                    // não fecha o dialog
+                }
+            });
         });
 
         dialog.show();
     }
+
+
 }

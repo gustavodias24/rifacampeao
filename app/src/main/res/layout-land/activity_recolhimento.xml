@@ -19,7 +19,6 @@
             android:id="@+id/main"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:orientation="vertical"
             android:padding="12dp">
 
@@ -28,6 +27,7 @@
                 android:id="@+id/btnGerarRelatorio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:layout_marginBottom="8dp"
                 android:backgroundTint="#BA4E4E"
                 android:paddingVertical="12dp"
@@ -114,10 +114,10 @@
                     android:id="@+id/edtRecolhedor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
                     android:completionThreshold="1"
                     android:hint="Digite o nome do recolhedor"
-                    android:inputType="textPersonName" />
+                    android:inputType="textPersonName"
+                    android:layout_marginBottom="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -130,10 +130,10 @@
                     android:id="@+id/edtVendedor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
                     android:completionThreshold="1"
                     android:hint="Digite o nome do vendedor"
-                    android:inputType="textPersonName" />
+                    android:inputType="textPersonName"
+                    android:layout_marginBottom="8dp" />
 
                 <Button
                     android:id="@+id/btnFiltrar"

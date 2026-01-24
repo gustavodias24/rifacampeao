@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Rifa Campeão</string>
-    <string name="app_version">V6</string>
+    <string name="data_modificacao">24/01/2025</string>
+    <string name="app_version">V8</string>
 </resources>
