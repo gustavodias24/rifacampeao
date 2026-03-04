@@ -24,6 +24,7 @@ import benicio.solucoes.rifacampeo.R;
 import benicio.solucoes.rifacampeo.VendedoresActivity;
 import benicio.solucoes.rifacampeo.databinding.DialogPagamentoRecebimentoBinding;
 import benicio.solucoes.rifacampeo.databinding.LayoutInputVendedorBinding;
+import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
 import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
 import benicio.solucoes.rifacampeo.objects.RetornoModel;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
@@ -322,6 +323,8 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
             dialogVendedor.show();
         });
     }
+
+
 
     @Override
     public int getItemCount() {

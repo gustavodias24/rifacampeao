@@ -2,6 +2,7 @@ package benicio.solucoes.rifacampeo;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -23,12 +24,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import benicio.solucoes.rifacampeo.databinding.ActivityMakeSorteioBinding;
 import benicio.solucoes.rifacampeo.databinding.ActivitySelectLoteriaBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.DateLimitModel;
+import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
 import benicio.solucoes.rifacampeo.objects.RecolheuModel;
 import benicio.solucoes.rifacampeo.objects.RecolhimentoResponse;
 import benicio.solucoes.rifacampeo.objects.ResponseSimple;
@@ -40,6 +43,10 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SelectLoteriaActivity extends AppCompatActivity {
+
+    Bundle b;
+
+    SharedPreferences sharedPreferences;
     String TAG = "buceta";
     private ActivitySelectLoteriaBinding selectLoteriaBinding;
     float somaBilhetes = 0.0f;
@@ -55,6 +62,10 @@ public class SelectLoteriaActivity extends AppCompatActivity {
         selectLoteriaBinding = ActivitySelectLoteriaBinding.inflate(getLayoutInflater());
         setContentView(selectLoteriaBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        b = getIntent().getExtras();
+        sharedPreferences = getSharedPreferences("info", MODE_PRIVATE);
+
 
 
         selectLoteriaBinding.button7.setOnClickListener(v -> {
@@ -88,15 +99,19 @@ public class SelectLoteriaActivity extends AppCompatActivity {
             }
         });
 
+
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         VendedorModel vendedorModel = new VendedorModel();
+        vendedorModel.set_id(sharedPreferences.getString("id_vendedor", ""));
+        vendedorModel.setNome(sharedPreferences.getString("nome_vendedor", ""));
+        vendedorModel.setDocumento(sharedPreferences.getString("documento_vendedor", ""));
+        vendedorModel.setSenha(sharedPreferences.getString("senha", ""));
 
-
-        vendedorModel.setSenha(getIntent().getStringExtra("code"));
         vendedorModel.setSerial(getDeviceUniqueId());
         RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
             @Override
@@ -134,7 +149,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
 
                                             float saldo_pode_fazer_loteria = (valorTotalGeradoCORLoteriaAtual + valorTotalGeradoDFLoteriaAtual);// - valorRecolhidoVendedor;
 
-                                            saldoVendedor = ((valorTotalGeradoDF + valorTotalGeradoCOR) - ((valorTotalGeradoDF + valorTotalGeradoCOR) * ((float) response1.body().getVendedor().getComissao() / 100))) - valorRecolhidoVendedor;
+                                            //saldoVendedor = ((valorTotalGeradoDF + valorTotalGeradoCOR) - ((valorTotalGeradoDF + valorTotalGeradoCOR) * ((float) response1.body().getVendedor().getComissao() / 100))) - valorRecolhidoVendedor;
 
                                             NumberFormat nf = NumberFormat.getNumberInstance(new Locale("pt", "BR"));
                                             nf.setMinimumFractionDigits(2);
@@ -146,11 +161,45 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                                                     //"SALDO DE APOSTAS CORUJA: R$ " + nf.format(valorTotalGeradoCORLoteriaAtual) +
                                                             "\nSALDO DE APOSTAS FEDERAL: R$ " + nf.format(valorTotalGeradoDFLoteriaAtual) +
                                                     "\nTOTAL DE APOSTAS: R$ " + nf.format((valorTotalGeradoCORLoteriaAtual+valorTotalGeradoDFLoteriaAtual)));
-                                            if ( saldoVendedor < 0){
-                                                tvValorFederal.setText("SALDO DEVE: R$ 0");
-                                            }else{
-                                                tvValorFederal.setText("SALDO DEVE: R$ " + nf.format(saldoVendedor));
-                                            }
+//                                            if ( saldoVendedor < 0){
+//                                                tvValorFederal.setText("SALDO DEVE: R$ 0");
+//                                            }else{
+//                                                tvValorFederal.setText("SALDO DEVE: R$ " + nf.format(saldoVendedor));
+//                                            }
+
+                                            RetrofitUtils.getApiService()
+                                                    .returnVendedores(1, new QueryModelEmpty()).enqueue(new Callback<List<VendedorModel>>() {
+                                                        @Override
+                                                        public void onResponse(Call<List<VendedorModel>> call, Response<List<VendedorModel>> response) {
+                                                            for ( VendedorModel vendedorModel1 : response.body()){
+                                                                if ( vendedorModel1.getNome().equals(vendedorModel.getNome())){
+
+                                                                    RetrofitUtils.getApiService().retornar_recolhimento(null, null, null, null, 999999999, 1).enqueue(new Callback<RecolhimentoResponse>() {
+                                                                        @Override
+                                                                        public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                                                                            //tvValorFederal.setText("SALDO DEVE: R$ " + nf.format(response.body().getItens()));
+                                                                            saldoVendedor = vendedorModel1.getSaldoAtual(response.body().getItens());
+                                                                            tvValorFederal.setText("SALDO DEVE: R$ " + nf.format(saldoVendedor));
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onFailure(Call<List<VendedorModel>> call, Throwable throwable) {
+
+                                                        }
+                                                    });
+
+
+
+
                                             podefazer = limiteAposta - (saldo_pode_fazer_loteria);
                                             //tvLimiteAposta.setText("Saldo Loteria: R$ " + (valorTotalGeradoCOR+valorTotalGeradoDF) + "\nSaldo Recolhido: R$ " + valorRecolhidoVendedor);
 
@@ -179,6 +228,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                     }
                 } else {
                     Toast.makeText(SelectLoteriaActivity.this, "Problema de Conexão!", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Problema de Conexão!: " + response1.message());
                 }
             }
 

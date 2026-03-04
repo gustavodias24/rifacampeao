@@ -111,8 +111,8 @@ public class MakeSorteioActivity extends AppCompatActivity {
             BilheteModel novoBilhete = new BilheteModel();
             novoBilhete.setData(dataFormatada);
 
-            novoBilhete.setDocumento_vendedor(sharedPreferences.getString("documento", ""));
-            novoBilhete.setNome_vendedor(sharedPreferences.getString("nome", ""));
+            novoBilhete.setDocumento_vendedor(sharedPreferences.getString("documento_vendedor", ""));
+            novoBilhete.setNome_vendedor(sharedPreferences.getString("nome_vendedor", ""));
 
             novoBilhete.setValorBilheteTotal(valorTotalBilhete);
             novoBilhete.setHora(horaFormatada);
@@ -202,7 +202,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
         });
 
         RecyclerView recyclerView = makeSorteioBinding.rvNumeros;
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(layoutManager);
 
         adapterNumero = new AdapterNumero(numeros, this);

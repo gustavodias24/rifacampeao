@@ -36,6 +36,7 @@ import java.util.UUID;
 
 import benicio.solucoes.rifacampeo.adapters.AdapterVendedores;
 import benicio.solucoes.rifacampeo.databinding.ActivityVendedoresBinding;
+import benicio.solucoes.rifacampeo.databinding.LayoutInputRecolhedorBinding;
 import benicio.solucoes.rifacampeo.databinding.LayoutInputVendedorBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.QueryModelEmpty;
@@ -65,6 +66,7 @@ public class VendedoresActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         mainBinding.novovendedor.setOnClickListener(v -> configuarDialog());
+        mainBinding.senharecolhe.setOnClickListener(v -> configuarDialogRecolhedor());
 
         rvVendedores = mainBinding.rvvendedores;
         configurarRV();
@@ -188,6 +190,76 @@ public class VendedoresActivity extends AppCompatActivity {
         rvVendedores.setHasFixedSize(true);
         adapterVendedores = new AdapterVendedores(vendedores, this);
         rvVendedores.setAdapter(adapterVendedores);
+    }
+
+    private void configuarDialogRecolhedor() {
+        AlertDialog.Builder b = new AlertDialog.Builder(VendedoresActivity.this);
+
+        LayoutInputRecolhedorBinding inputRecolhedorBinding =
+                LayoutInputRecolhedorBinding.inflate(getLayoutInflater());
+
+        inputRecolhedorBinding.cadatrar.setOnClickListener(v -> {
+
+            String nome = inputRecolhedorBinding.edtNome.getText().toString().trim();
+            String celular = inputRecolhedorBinding.edtCelular.getText().toString().trim();
+            String senha = inputRecolhedorBinding.edtSenha.getText().toString().trim();
+
+            if (nome.isEmpty()) {
+                Toast.makeText(this, "Nome não pode ser vazio", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (celular.isEmpty()) {
+                Toast.makeText(this, "Celular não pode ser vazio", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (senha.length() != 6) {
+                Toast.makeText(this, "A senha precisa ter 6 dígitos numéricos!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Como seu endpoint é saveVendedores e o modelo é VendedorModel,
+            // aqui a gente preenche os campos que NÃO existem no layout com padrão.
+            int comissao = 0;
+            int limiteAposta = 0;
+            String despesas = "";
+            String documento = "";
+            boolean ativo = true;
+
+            RetrofitUtils.getApiService().saveVendedores(new VendedorModel(
+                    celular,
+                    nome,
+                    UUID.randomUUID().toString(),
+                    senha,
+                    despesas,
+                    "",
+                    comissao,
+                    ativo,
+                    documento,
+                    limiteAposta
+            )).enqueue(new Callback<RetornoModel>() {
+                @Override
+                public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(VendedoresActivity.this, "Cadastrado!", Toast.LENGTH_SHORT).show();
+                        listarVendedores(VendedoresActivity.this);
+                        dialogVendedor.dismiss();
+                    } else {
+                        Toast.makeText(VendedoresActivity.this, "Problema de Conexão!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<RetornoModel> call, Throwable throwable) {
+                    Toast.makeText(VendedoresActivity.this, "Falha ao cadastrar!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        b.setView(inputRecolhedorBinding.getRoot());
+        dialogVendedor = b.create();
+        dialogVendedor.show();
     }
 
     private void configuarDialog() {

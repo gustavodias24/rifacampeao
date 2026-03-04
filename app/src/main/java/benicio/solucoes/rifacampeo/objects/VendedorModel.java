@@ -31,39 +31,58 @@ public class VendedorModel {
     int valor_bilhetes_gerados = 0;
 
 
-
     public VendedorModel() {
     }
 
-    String totalFmt, comissaoFmt,saldoFmt ="";
+    String totalFmt, comissaoFmt, saldoFmt = "";
 
     public TotalRecolhimentoPagamento calcularSaldoPorVendedor(List<RecolheuModel> recolhimentos) {
         if (recolhimentos == null || recolhimentos.isEmpty()) {
-            return new TotalRecolhimentoPagamento(0f,0f);
+            return new TotalRecolhimentoPagamento(0f, 0f);
         }
         float totalRecolhido = 0.0f;
         float totalPagamento = 0.0f;
 
-        for (RecolheuModel recolheuModel :  recolhimentos){
-            Log.d("buceta", "NomeRecolhimento: " + recolheuModel.getVendedor() + " NomeVendedor: " + getNome());
-            if (recolheuModel.getVendedor().trim().equals(getNome().trim())){
-                Log.d("buceta", "passou aqui, agora o tipo é: " +  recolheuModel.getTipo());
-                if ( recolheuModel.getTipo() == 0){
-                    totalRecolhido += recolheuModel.getValor();
-                }else{
-                    totalPagamento += recolheuModel.getValor();
+        for (RecolheuModel recolheuModel : recolhimentos) {
+            //Log.d("buceta", "NomeRecolhimento: " + recolheuModel.getVendedor() + " NomeVendedor: " + getNome());
+            if (recolheuModel.getVendedor() != null) {
+                if (recolheuModel.getVendedor().trim().equals(getNome().trim())) {
+                    //Log.d("buceta", "passou aqui, agora o tipo é: " + recolheuModel.getTipo());
+                    if (recolheuModel.getTipo() == 0) {
+                        totalRecolhido += recolheuModel.getValor();
+                    } else {
+                        totalPagamento += recolheuModel.getValor();
+                    }
                 }
             }
         }
 
-        return new TotalRecolhimentoPagamento(totalRecolhido, totalPagamento) ;//- totalPago;
+        return new TotalRecolhimentoPagamento(totalRecolhido, totalPagamento);//- totalPago;
+    }
+
+    public Float getSaldoAtual(List<RecolheuModel> recolhimentos) {
+        float comissaoValor = (getValor_bilhetes_gerados() * ((float) comissao / 100));
+        TotalRecolhimentoPagamento totalRecolhimentoPagamento = calcularSaldoPorVendedor(recolhimentos);
+        float saldoPagemento = totalRecolhimentoPagamento.getTotalPagamento();//+ getValor_bilhetes_gerados();
+        float saldoRecolhido = totalRecolhimentoPagamento.getTotalRecolhido();//+ getValor_bilhetes_gerados();
+
+        saldoRecolhido = (saldoRecolhido - saldoPagemento);
+
+        String TAG = "buceta";
+        Log.d(TAG,
+                "comissaoValor: " + comissaoValor
+                + " comissaoValor: " + comissaoValor
+                + " saldoPagemento: " + saldoPagemento
+                + " saldoRecolhido: " + saldoRecolhido
+                + " lista recolhimentos: " + recolhimentos.size());
+        return (getValor_bilhetes_gerados() - comissaoValor) - saldoRecolhido;
     }
 
     public String toStringVendedor(List<RecolheuModel> recolhimentos) {
-        float comissaoValor =(getValor_bilhetes_gerados() * ((float) comissao /100));
+        float comissaoValor = (getValor_bilhetes_gerados() * ((float) comissao / 100));
         TotalRecolhimentoPagamento totalRecolhimentoPagamento = calcularSaldoPorVendedor(recolhimentos);
-        float saldoPagemento = totalRecolhimentoPagamento.getTotalPagamento() ;//+ getValor_bilhetes_gerados();
-        float saldoRecolhido = totalRecolhimentoPagamento.getTotalRecolhido() ;//+ getValor_bilhetes_gerados();
+        float saldoPagemento = totalRecolhimentoPagamento.getTotalPagamento();//+ getValor_bilhetes_gerados();
+        float saldoRecolhido = totalRecolhimentoPagamento.getTotalRecolhido();//+ getValor_bilhetes_gerados();
 
         saldoRecolhido = (saldoRecolhido - saldoPagemento);
 
@@ -88,11 +107,11 @@ public class VendedorModel {
                 "<b>Número Celular:</b> " + numeroCelular + "<br><br>" +
 
                 // Linha menor para não quebrar
-                "<small>Valor da Comissão: R$" + comissaoValor + "</small><br>"+
-                "<small>Saldo de Todas as Loterias: R$" + getValor_bilhetes_gerados() + "</small><br>"+
-                "<small>Saldo  Pagamentos: R$" + saldoPagemento + "</small><br>"+
-                "<small>Saldo  Recolhimentos - Pagamentos: R$" + saldoRecolhido + "</small><br><br>"+
-                "<big>Saldo Loterial Atual: R$" + saldoAtual + "</big><br>" ;
+                "<small>Valor da Comissão: R$" + comissaoValor + "</small><br>" +
+                "<small>Saldo de Todas as Loterias: R$" + getValor_bilhetes_gerados() + "</small><br>" +
+                "<small>Saldo  Pagamentos: R$" + saldoPagemento + "</small><br>" +
+                "<small>Saldo  Recolhimentos - Pagamentos: R$" + saldoRecolhido + "</small><br><br>" +
+                "<big>Saldo Loterial Atual: R$" + saldoAtual + "</big><br>";
 
     }
 

@@ -43,6 +43,12 @@
 
 
         <Button
+            android:id="@+id/senharecolhe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SENHA RECOLHE" />
+
+        <Button
             android:id="@+id/recolhimento"
             android:layout_width="match_parent"
             android:textColor="@color/white"

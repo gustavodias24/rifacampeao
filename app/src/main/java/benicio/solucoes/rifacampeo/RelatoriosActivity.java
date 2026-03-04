@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
@@ -154,7 +155,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         nomes.clear();
         documentos.clear();
 
-        // item inicial padrão em cada spinner
         nomes.add("Todos");
         documentos.add("Todos");
 
@@ -165,8 +165,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         adapterDocumentos = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, documentos);
         adapterDocumentos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spDocumentoVendedor.setAdapter(adapterDocumentos);
-
-        // ❌ Removido: nenhum setOnItemSelectedListener que force um spinner mudar o outro
     }
 
     /** Spinner Loteria: Todos / FD / COR */
@@ -191,7 +189,6 @@ public class RelatoriosActivity extends AppCompatActivity {
                             vendedores.clear();
                             vendedores.addAll(response.body());
 
-                            // Recria as listas mantendo "Todos" como primeiro item
                             nomes.clear();
                             documentos.clear();
                             nomes.add("Todos");
@@ -227,7 +224,7 @@ public class RelatoriosActivity extends AppCompatActivity {
                             bilhetesFiltrados.clear();
 
                             bilhetesAll.addAll(response.body());
-                            Collections.reverse(bilhetesAll); // mais recentes primeiro, se essa for a ideia
+                            Collections.reverse(bilhetesAll);
 
                             aplicarFiltros();
                         } else {
@@ -243,7 +240,6 @@ public class RelatoriosActivity extends AppCompatActivity {
     }
 
     private void aplicarFiltros() {
-        // pega o texto atual de cada filtro
         String nomeSel = spNomeVendedor.getSelectedItem() == null
                 ? "" : spNomeVendedor.getSelectedItem().toString().trim();
         String docSel = spDocumentoVendedor.getSelectedItem() == null
@@ -251,7 +247,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         String lotSel = spLoteria.getSelectedItem() == null
                 ? "" : spLoteria.getSelectedItem().toString().trim();
 
-        // "Todos" = sem filtro
         if ("Todos".equalsIgnoreCase(nomeSel)) nomeSel = "";
         if ("Todos".equalsIgnoreCase(docSel)) docSel = "";
         if ("Todos".equalsIgnoreCase(lotSel)) lotSel = "";
@@ -273,10 +268,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         adapterBilhetes.notifyDataSetChanged();
     }
 
-    /**
-     * Checa se um bilhete atende aos filtros atuais.
-     * (todos os filtros são aplicados em AND)
-     */
     private boolean matches(
             BilheteModel b,
             String nome,
@@ -292,7 +283,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         boolean okLot       = isEmpty(loteria)         || contains(b.getLoteria(), loteria);
         boolean okIdBilhete = isEmpty(idBilheteFiltro) || contains(b.get_id(), idBilheteFiltro);
 
-        // data do bilhete -> assume que b.getData() já está "dd/MM/yyyy"
         Date dataBilhete = parseDateOrNull(formatDate(b.getData()));
         boolean okData = inRange(dataBilhete, dIni, dFim);
 
@@ -303,7 +293,7 @@ public class RelatoriosActivity extends AppCompatActivity {
         if (value == null) return start == null && end == null;
         if (start != null && value.before(start)) return false;
         if (end != null && value.after(end)) return false;
-        return true; // inclusivo
+        return true;
     }
 
     private Date parseDateOrNull(String s) {
@@ -341,7 +331,6 @@ public class RelatoriosActivity extends AppCompatActivity {
     }
 
     private String formatDate(String raw) {
-        // se já vier "dd/MM/yyyy", só retorna
         return raw;
     }
 
@@ -356,39 +345,65 @@ public class RelatoriosActivity extends AppCompatActivity {
         final int MARGIN = 36;
         final int CONTENT_W = PAGE_W - (MARGIN * 2);
 
-        Paint title = new Paint();
+        Paint title = new Paint(Paint.ANTI_ALIAS_FLAG);
         title.setTextSize(18f);
         title.setFakeBoldText(true);
 
-        Paint sub = new Paint();
+        Paint sub = new Paint(Paint.ANTI_ALIAS_FLAG);
         sub.setTextSize(12.5f);
 
-        Paint label = new Paint();
+        Paint label = new Paint(Paint.ANTI_ALIAS_FLAG);
         label.setTextSize(12.5f);
         label.setFakeBoldText(true);
 
-        Paint value = new Paint();
+        Paint value = new Paint(Paint.ANTI_ALIAS_FLAG);
         value.setTextSize(12.5f);
 
-        Paint small = new Paint();
+        Paint small = new Paint(Paint.ANTI_ALIAS_FLAG);
         small.setTextSize(10f);
         small.setAlpha(180);
 
-        Paint box = new Paint();
+        Paint box = new Paint(Paint.ANTI_ALIAS_FLAG);
         box.setStyle(Paint.Style.STROKE);
         box.setStrokeWidth(1.5f);
-        box.setAntiAlias(true);
 
-        Paint divider = new Paint();
+        Paint divider = new Paint(Paint.ANTI_ALIAS_FLAG);
         divider.setStrokeWidth(1f);
         divider.setAlpha(140);
+
+        // TOTAL (header) grande, destacado e centralizado
+        Paint totalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        totalPaint.setTextSize(20.5f);
+        totalPaint.setFakeBoldText(true);
+        totalPaint.setColor(Color.BLACK);
+
+        Paint totalBg = new Paint(Paint.ANTI_ALIAS_FLAG);
+        totalBg.setStyle(Paint.Style.FILL);
+        totalBg.setColor(Color.parseColor("#EAEAEA")); // fundo claro
+        totalBg.setAlpha(255);
 
         final int VALOR_UNITARIO = 10;
         final Locale PTBR = new Locale("pt", "BR");
         java.text.NumberFormat money = java.text.NumberFormat.getCurrencyInstance(PTBR);
 
+        // ===== calcula TOTAIS ANTES para entrar no header =====
+        int totalNumeros = 0;
+        double totalValor = 0;
+        for (BilheteModel b : itens) {
+            int qtd = (b.getNumeros() == null) ? 0 : b.getNumeros().size();
+            totalNumeros += qtd;
+            totalValor += (qtd * VALOR_UNITARIO);
+        }
+
+        String totalTxt = "Total de números: " + totalNumeros +
+                "    |    Valor total: " + money.format(totalValor);
+
+        // ===== filtros: só os aplicados =====
+        String filtrosAplicados = resumoFiltrosAplicados();
+
         PdfDocument doc = new PdfDocument();
         int pageNum = 1;
+
         PdfDocument.Page page = doc.startPage(
                 new PdfDocument.PageInfo.Builder(PAGE_W, PAGE_H, pageNum).create()
         );
@@ -396,28 +411,20 @@ public class RelatoriosActivity extends AppCompatActivity {
 
         int y = MARGIN;
 
-        // Cabeçalho
-        y = drawHeader(canvas, title, sub, divider, CONTENT_W, MARGIN, y);
-
-        // Filtros atuais
-        String filtros = resumoFiltros();
-        y += drawWrappedText(canvas, "Filtros: " + filtros, sub, MARGIN, y, CONTENT_W) + 6;
-
-        int totalNumeros = 0;
-        double totalValor = 0;
+        // Cabeçalho (com total grande centralizado + filtros aplicados)
+        y = drawHeader(canvas, title, sub, divider, totalPaint, totalBg,
+                PAGE_W, CONTENT_W, MARGIN, y, totalTxt, filtrosAplicados);
 
         for (BilheteModel b : itens) {
 
-            // linhas de conteúdo pra esse bilhete
             List<String> linhasBilhete = buildBilheteLines(b, VALOR_UNITARIO, money);
 
             int cardPadding = 10;
-            int lineHeight = (int) (value.getTextSize() + 8); // mais espaço entre linhas
+            int lineHeight = (int) (value.getTextSize() + 8);
 
             final int TITLE_EXTRA_GAP = 8;
             int headerH = (int) (label.getTextSize() + 10 + TITLE_EXTRA_GAP);
 
-            // quebra de texto por largura
             List<String> wrapped = new ArrayList<>();
             for (String ln : linhasBilhete) {
                 wrapped.addAll(
@@ -428,7 +435,6 @@ public class RelatoriosActivity extends AppCompatActivity {
             int bodyH = wrapped.size() * lineHeight;
             int cardH = headerH + bodyH + (cardPadding * 2);
 
-            // quebra de página se não couber
             if (y + cardH + 10 > PAGE_H - MARGIN) {
                 drawFooter(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
                 doc.finishPage(page);
@@ -439,7 +445,9 @@ public class RelatoriosActivity extends AppCompatActivity {
                 );
                 canvas = page.getCanvas();
                 y = MARGIN;
-                y = drawHeader(canvas, title, sub, divider, CONTENT_W, MARGIN, y);
+
+                y = drawHeader(canvas, title, sub, divider, totalPaint, totalBg,
+                        PAGE_W, CONTENT_W, MARGIN, y, totalTxt, filtrosAplicados);
             }
 
             float left = MARGIN;
@@ -455,11 +463,9 @@ public class RelatoriosActivity extends AppCompatActivity {
             String titulo = "Bilhete " + safe(b.getNumero()) + "  •  " + safe(b.getLoteria());
             canvas.drawText(titulo, cx, cy + label.getTextSize(), label);
 
-            // divisor logo abaixo do título
             float dividerY = cy + label.getTextSize() + 4;
             canvas.drawLine(cx, dividerY, right - cardPadding, dividerY, divider);
 
-            // desce pro corpo
             cy += headerH;
 
             for (String ln : wrapped) {
@@ -468,27 +474,11 @@ public class RelatoriosActivity extends AppCompatActivity {
             }
 
             y = (int) bottom + 10;
-
-            int qtd = (b.getNumeros() == null) ? 0 : b.getNumeros().size();
-            totalNumeros += qtd;
-            totalValor += qtd * VALOR_UNITARIO;
         }
-
-        // Totais
-        y += 6;
-        canvas.drawLine(MARGIN, y, MARGIN + CONTENT_W, y, divider);
-        y += 12;
-
-        String totalTxt = "Total de números: " + totalNumeros +
-                "    |    Valor total: " + money.format(totalValor);
-
-        drawWrappedText(canvas, totalTxt, label, MARGIN, y, CONTENT_W);
-        y += (int) (label.getTextSize()) + 10;
 
         drawFooter(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
         doc.finishPage(page);
 
-        // salvar e compartilhar
         File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         if (dir == null) dir = getExternalFilesDir(null);
         File pdf = new File(dir, "relatorio_bilhetes_" + System.currentTimeMillis() + ".pdf");
@@ -507,25 +497,85 @@ public class RelatoriosActivity extends AppCompatActivity {
                            Paint title,
                            Paint sub,
                            Paint divider,
+                           Paint totalPaint,
+                           Paint totalBg,
+                           int pageW,
                            int contentW,
                            int margin,
-                           int y) {
+                           int y,
+                           String totalTxt,
+                           String filtrosAplicados) {
 
+        // TOTAL grande centralizado e destacado (com fundo)
+        y += drawCenteredWrappedTextWithBg(canvas, totalTxt, totalPaint, totalBg,
+                margin, y, contentW, pageW);
+        y += 10;
+
+        // Título do relatório
         canvas.drawText("Relatório de Bilhetes", margin, y + title.getTextSize(), title);
         y += (int) (title.getTextSize() + 6);
 
-        String data = new java.text.SimpleDateFormat(
-                "dd/MM/yyyy HH:mm",
-                new java.util.Locale("pt", "BR")
-        ).format(new java.util.Date());
-
+        String data = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR"))
+                .format(new Date());
         canvas.drawText("Gerado em " + data, margin, y + sub.getTextSize(), sub);
-        y += (int) (sub.getTextSize() + 8);
+        y += (int) (sub.getTextSize() + 6);
+
+        // Filtros (somente aplicados)
+        if (!isEmpty(filtrosAplicados)) {
+            String linha = "Filtros aplicados: " + filtrosAplicados;
+            y += drawWrappedText(canvas, linha, sub, margin, y, contentW);
+            y += 4;
+        }
 
         canvas.drawLine(margin, y, margin + contentW, y, divider);
         y += 12;
 
         return y;
+    }
+
+    /**
+     * Desenha texto CENTRALIZADO, quebrando linhas, com FUNDO (destaque).
+     * Retorna a altura total ocupada.
+     */
+    private int drawCenteredWrappedTextWithBg(Canvas canvas,
+                                              String text,
+                                              Paint textPaint,
+                                              Paint bgPaint,
+                                              int margin,
+                                              int y,
+                                              int contentW,
+                                              int pageW) {
+
+        int padX = 10;
+        int padY = 6;
+        int gap = 6;
+
+        List<String> lines = wrapText(text, textPaint, contentW - (padX * 2));
+
+        Paint.FontMetrics fm = textPaint.getFontMetrics();
+        float textH = (fm.descent - fm.ascent);
+        float rectH = textH + (padY * 2);
+
+        int startY = y;
+
+        for (String line : lines) {
+            float textW = textPaint.measureText(line);
+            float x = (pageW - textW) / 2f;
+
+            float left = x - padX;
+            float top = y;
+            float right = x + textW + padX;
+            float bottom = y + rectH;
+
+            canvas.drawRoundRect(left, top, right, bottom, 10f, 10f, bgPaint);
+
+            float baseline = y + padY - fm.ascent;
+            canvas.drawText(line, x, baseline, textPaint);
+
+            y += (int) (rectH + gap);
+        }
+
+        return y - startY;
     }
 
     private void drawFooter(Canvas canvas,
@@ -536,7 +586,7 @@ public class RelatoriosActivity extends AppCompatActivity {
                             int pageNum) {
 
         String left = "© " +
-                java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) +
+                Calendar.getInstance().get(Calendar.YEAR) +
                 " • Sistema de Relatórios";
 
         String right = "Página " + pageNum;
@@ -564,7 +614,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         String numeroBilhete = safe(b.getNumero());
         String loteria = safe(b.getLoteria());
 
-        // ordena números
         List<Integer> nums = (b.getNumeros() == null)
                 ? new ArrayList<>()
                 : new ArrayList<>(b.getNumeros());
@@ -575,7 +624,7 @@ public class RelatoriosActivity extends AppCompatActivity {
         String valorTotal = money.format(qtd * valorUnitario);
         String valorUnit = money.format(valorUnitario);
 
-        linhas.add("\n\nID: " + id);
+        linhas.add("ID: " + id);
         linhas.add("Data: " + data + "    Hora: " + hora);
         linhas.add("Loteria: " + loteria + "    Nº Bilhete: " + numeroBilhete);
         linhas.add("Vendedor: " + nomeVend);
@@ -597,12 +646,13 @@ public class RelatoriosActivity extends AppCompatActivity {
         List<String> lines = wrapText(text, paint, maxW);
         int lineH = (int) (paint.getTextSize() + 6);
 
+        int startY = y;
         for (String l : lines) {
             canvas.drawText(l, x, y + lineH, paint);
             y += lineH;
         }
 
-        return lines.size() * lineH;
+        return y - startY;
     }
 
     private List<String> wrapText(String text, Paint paint, int maxW) {
@@ -622,7 +672,6 @@ public class RelatoriosActivity extends AppCompatActivity {
             } else {
                 if (line.length() > 0) out.add(line.toString());
 
-                // se a palavra sozinha já estoura o maxW, quebra ela
                 if (paint.measureText(w) > maxW) {
                     out.addAll(breakLongWord(w, paint, maxW));
                     line = new StringBuilder();
@@ -632,10 +681,7 @@ public class RelatoriosActivity extends AppCompatActivity {
             }
         }
 
-        if (line.length() > 0) {
-            out.add(line.toString());
-        }
-
+        if (line.length() > 0) out.add(line.toString());
         return out;
     }
 
@@ -653,10 +699,7 @@ public class RelatoriosActivity extends AppCompatActivity {
             }
         }
 
-        if (cur.length() > 0) {
-            parts.add(cur.toString());
-        }
-
+        if (cur.length() > 0) parts.add(cur.toString());
         return parts;
     }
 
@@ -683,11 +726,9 @@ public class RelatoriosActivity extends AppCompatActivity {
             shareIntent.putExtra(Intent.EXTRA_TEXT, "Segue o relatório em PDF 📄");
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            // tenta mandar direto pro WhatsApp
             shareIntent.setPackage("com.whatsapp");
             startActivity(shareIntent);
         } catch (Exception e) {
-            // fallback: qualquer app
             Intent genericShare = new Intent(Intent.ACTION_SEND);
             genericShare.setType("application/pdf");
             genericShare.putExtra(
@@ -701,7 +742,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         }
     }
 
-    // Abrir visualizador de PDF (caso você queira inspecionar antes)
     private void abrirPdf(File pdf) {
         try {
             Uri uri = FileProvider.getUriForFile(
@@ -722,24 +762,54 @@ public class RelatoriosActivity extends AppCompatActivity {
         return (s == null) ? "" : s;
     }
 
+    /**
+     * Retorna SOMENTE os filtros aplicados (ignora "Todos" e vazios).
+     * Se nenhum estiver aplicado, retorna "Nenhum".
+     */
     @SuppressLint("DefaultLocale")
-    private String resumoFiltros() {
-        String nomeSel = (spNomeVendedor.getSelectedItem() == null)
-                ? "" : spNomeVendedor.getSelectedItem().toString();
-        String docSel = (spDocumentoVendedor.getSelectedItem() == null)
-                ? "" : spDocumentoVendedor.getSelectedItem().toString();
-        String loteriaSel = (spLoteria.getSelectedItem() == null)
-                ? "" : spLoteria.getSelectedItem().toString();
+    private String resumoFiltrosAplicados() {
+        List<String> parts = new ArrayList<>();
 
-        return String.format(
-                Locale.getDefault(),
-                "Nome=%s, Doc=%s, DataIni=%s, DataFim=%s, Loteria=%s, ID=%s",
-                safe(nomeSel),
-                safe(docSel),
-                safe(edtDataInicio.getText().toString()),
-                safe(edtDataFim.getText().toString()),
-                safe(loteriaSel),
-                safe(edtIdBilhete.getText().toString())
-        );
+        String nomeSel = (spNomeVendedor.getSelectedItem() == null)
+                ? "" : spNomeVendedor.getSelectedItem().toString().trim();
+        String docSel = (spDocumentoVendedor.getSelectedItem() == null)
+                ? "" : spDocumentoVendedor.getSelectedItem().toString().trim();
+        String lotSel = (spLoteria.getSelectedItem() == null)
+                ? "" : spLoteria.getSelectedItem().toString().trim();
+
+        if ("Todos".equalsIgnoreCase(nomeSel)) nomeSel = "";
+        if ("Todos".equalsIgnoreCase(docSel)) docSel = "";
+        if ("Todos".equalsIgnoreCase(lotSel)) lotSel = "";
+
+        String dataIni = safe(edtDataInicio.getText().toString().trim());
+        String dataFim = safe(edtDataFim.getText().toString().trim());
+        String id = safe(edtIdBilhete.getText().toString().trim());
+
+        if (!isEmpty(nomeSel)) parts.add("Vendedor: " + nomeSel);
+        if (!isEmpty(docSel)) parts.add("Doc: " + docSel);
+        if (!isEmpty(lotSel)) parts.add("Loteria: " + lotSel);
+        if (!isEmpty(id)) parts.add("ID: " + id);
+
+        if (!isEmpty(dataIni) || !isEmpty(dataFim)) {
+            if (!isEmpty(dataIni) && !isEmpty(dataFim)) {
+                parts.add("Período: " + dataIni + " a " + dataFim);
+            } else if (!isEmpty(dataIni)) {
+                parts.add("A partir de: " + dataIni);
+            } else {
+                parts.add("Até: " + dataFim);
+            }
+        }
+
+        if (parts.isEmpty()) return "Nenhum";
+        return joinStrings(parts, "  |  ");
+    }
+
+    private String joinStrings(List<String> list, String sep) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            sb.append(list.get(i));
+            if (i < list.size() - 1) sb.append(sep);
+        }
+        return sb.toString();
     }
 }

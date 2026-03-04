@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -32,6 +33,9 @@ public class MenuAcvity extends AppCompatActivity {
     EditText et1, et2, et3, et4, et5, et6;
     private ActivityMenuAcvityBinding mainBinding;
 
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor edt;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,8 +43,23 @@ public class MenuAcvity extends AppCompatActivity {
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
+        prefs = getSharedPreferences("rprefs", MODE_PRIVATE);
+        edt = prefs.edit();
+
         sharedPreferences = getSharedPreferences("info", MODE_PRIVATE);
         editor = sharedPreferences.edit();
+
+
+        mainBinding.button11.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminMasterActivity.class));
+        });
+
+
+        mainBinding.button10.setOnClickListener(v -> {
+            Intent i = new Intent(this, RecolhimentoActivity.class);
+            i.putExtra("recolhedor", true);
+            startActivity(i);
+        });
 
 
         et1 = findViewById(R.id.et1);
@@ -111,15 +130,35 @@ public class MenuAcvity extends AppCompatActivity {
             VendedorModel vendedorModel = new VendedorModel();
             vendedorModel.setSenha(code);
             vendedorModel.setSerial(getDeviceUniqueId());
+
             RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
                 @Override
                 public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response) {
                     if (response.isSuccessful()) {
                         if (response.body().isSuccess()) {
+                            ResponseSimple body = response.body();
 
-                            editor.putString("id_vendedor", response.body().getVendedor().get_id()).apply();
-                            editor.putString("nome", response.body().getVendedor().getNome()).apply();
-                            editor.putString("documento", response.body().getVendedor().getDocumento()).apply();
+                            VendedorModel v = body.getVendedor();
+
+                            editor.putString("id_vendedor", (v.get_id()));
+                            editor.putString("nome_vendedor", (v.getNome()));
+                            editor.putString("documento_vendedor", (v.getDocumento()));
+
+                            // ===== resposta do login =====
+                            editor.putBoolean("success", body.isSuccess());
+                            editor.putString("msg", (body.getMsg()));
+
+                            // ===== credenciais / código =====
+                            editor.putString("senha", (code));     // se você REALMENTE quer salvar isso
+                            editor.putString("codigo", (code));    // substitui aquele "vendedor" errado
+
+                            // ===== totais do ResponseSimple =====
+                            editor.putFloat("valorTotalGeradoCOR", body.getValorTotalGeradoCOR());
+                            editor.putFloat("valorTotalGeradoDF", body.getValorTotalGeradoDF());
+                            editor.putFloat("valorTotalGeradoDFLoteriaAtual", body.getValorTotalGeradoDFLoteriaAtual());
+                            editor.putFloat("valorTotalGeradoCORLoteriaAtual", body.getValorTotalGeradoCORLoteriaAtual());
+
+                            editor.apply();
 
                             Intent i = new Intent(MenuAcvity.this, PremioActivity.class);
 
@@ -167,19 +206,33 @@ public class MenuAcvity extends AppCompatActivity {
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
                 String senha = input.getText().toString().trim();
 
-                if (senha.equals(senhaBater)) {
-                    dialog.dismiss();
+                dialog.dismiss();
 
-                    if (senhaBater.equals("@5656#")) {
-                        Intent i = new Intent(this, RecolhimentoActivity.class);
-                        i.putExtra("recolhedor", true);
-                        startActivity(i);
-                    } else if (senhaBater.equals("@4267#")) {
-                        startActivity(new Intent(this, AdminMasterActivity.class));
-                    }
+                if (senhaBater.equals("@4267#")) {
+                    startActivity(new Intent(this, AdminMasterActivity.class));
                 } else {
-                    input.setError("Senha incorreta");
-                    // não fecha o dialog
+                    VendedorModel vendedorModel = new VendedorModel();
+                    vendedorModel.setSenha(senha);
+//                        vendedorModel.setSerial(getDeviceUniqueId());
+
+                    RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
+                        @Override
+                        public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response) {
+                            if (response.isSuccessful()) {
+                                if (response.body().isSuccess()) {
+                                    Intent i = new Intent(MenuAcvity.this, RecolhimentoActivity.class);
+                                    edt.putString("recolhedor", response.body().getVendedor().getNome()).apply();
+                                    i.putExtra("recolhedor", true);
+                                    startActivity(i);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseSimple> call, Throwable throwable) {
+
+                        }
+                    });
                 }
             });
         });
