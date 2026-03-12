@@ -10,6 +10,7 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,7 +48,7 @@ import retrofit2.Response;
 
 public class RelatoriosActivity extends AppCompatActivity {
 
-    // Filtros (spinners e datas)
+    // Filtros
     private Spinner spNomeVendedor, spDocumentoVendedor, spLoteria;
     private EditText edtDataInicio, edtDataFim, edtIdBilhete;
 
@@ -62,7 +63,7 @@ public class RelatoriosActivity extends AppCompatActivity {
     private final List<BilheteModel> bilhetesAll = new ArrayList<>();
     private final List<BilheteModel> bilhetesFiltrados = new ArrayList<>();
 
-    // Vendedores (para preencher os selects)
+    // Vendedores
     private final List<VendedorModel> vendedores = new ArrayList<>();
     private final List<String> nomes = new ArrayList<>();
     private final List<String> documentos = new ArrayList<>();
@@ -77,21 +78,28 @@ public class RelatoriosActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        // Layout da tela
         setContentView(R.layout.activity_relatorios);
 
         bindViews();
         setupRecycler();
         setupPickers();
 
-        setupSpinnerBase();     // Nome/Documento começa com "Todos"
-        setupSpinnerLoteria();  // Loteria: Todos / FD / COR
-        carregarVendedores();   // Preenche Nome/Documento via API
+        setupSpinnerBase();
+        setupSpinnerLoteria();
+        carregarVendedores();
 
         btnBuscar.setOnClickListener(v -> carregarBilhetes());
-        btnGerarPdf.setOnClickListener(v -> gerarPdf(bilhetesFiltrados));
 
-        // Carrega lista inicial
+        btnGerarPdf.setOnClickListener(v -> {
+            aplicarFiltros(); // garante que o filtro atual seja aplicado
+            gerarPdf(new ArrayList<>(bilhetesFiltrados)); // envia uma cópia já filtrada
+        });
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        String dataAtual = sdf.format(new Date());
+        edtDataInicio.setText(dataAtual);
+        edtDataFim.setText(dataAtual);
+
         carregarBilhetes();
     }
 
@@ -101,7 +109,7 @@ public class RelatoriosActivity extends AppCompatActivity {
         spLoteria = findViewById(R.id.spLoteria);
         edtDataInicio = findViewById(R.id.edtDataInicio);
         edtDataFim = findViewById(R.id.edtDataFim);
-        edtIdBilhete = findViewById(R.id.spIdBilhete); // no XML o id é spIdBilhete mas é EditText
+        edtIdBilhete = findViewById(R.id.spIdBilhete);
         rvBilhetes = findViewById(R.id.rvBilhetes);
         btnBuscar = findViewById(R.id.btnBuscar);
         btnGerarPdf = findViewById(R.id.btnGerarPdf);
@@ -121,6 +129,7 @@ public class RelatoriosActivity extends AppCompatActivity {
                     (view, y, m, d) -> {
                         Calendar c = Calendar.getInstance();
                         c.set(y, m, d, 0, 0, 0);
+                        c.set(Calendar.MILLISECOND, 0);
                         edtDataInicio.setText(sdfData.format(c.getTime()));
                     },
                     cal.get(Calendar.YEAR),
@@ -137,6 +146,7 @@ public class RelatoriosActivity extends AppCompatActivity {
                     (view, y, m, d) -> {
                         Calendar c = Calendar.getInstance();
                         c.set(y, m, d, 23, 59, 59);
+                        c.set(Calendar.MILLISECOND, 999);
                         edtDataFim.setText(sdfData.format(c.getTime()));
                     },
                     cal.get(Calendar.YEAR),
@@ -147,10 +157,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Inicializa os spinners de Nome/Documento com "Todos".
-     * IMPORTANTE: agora NÃO sincroniza mais nome <-> documento.
-     */
     private void setupSpinnerBase() {
         nomes.clear();
         documentos.clear();
@@ -167,7 +173,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         spDocumentoVendedor.setAdapter(adapterDocumentos);
     }
 
-    /** Spinner Loteria: Todos / FD / COR */
     private void setupSpinnerLoteria() {
         String[] LOTERIAS = new String[]{"Todos", "FD", "COR"};
         ArrayAdapter<String> loteriaAdapter = new ArrayAdapter<>(
@@ -179,7 +184,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         spLoteria.setAdapter(loteriaAdapter);
     }
 
-    /** Carrega Nome/Documento via API e preenche os spinners */
     private void carregarVendedores() {
         RetrofitUtils.getApiService().returnVendedores(1, new QueryModelEmpty())
                 .enqueue(new Callback<List<VendedorModel>>() {
@@ -195,8 +199,15 @@ public class RelatoriosActivity extends AppCompatActivity {
                             documentos.add("Todos");
 
                             for (VendedorModel v : vendedores) {
-                                nomes.add(safe(v.getNome()));
-                                documentos.add(safe(v.getDocumento()));
+                                if (!safe(v.getNome()).trim().isEmpty()) {
+                                    nomes.add(safe(v.getNome()).trim());
+                                }
+
+                                if (!safe(v.getDocumento()).trim().isEmpty()) {
+                                    documentos.add(safe(v.getDocumento()).trim());
+                                }
+
+                                Log.d("RelatoriosActivity", "Recolhedor: " + v.getDocumento());
                             }
 
                             adapterNomes.notifyDataSetChanged();
@@ -242,8 +253,10 @@ public class RelatoriosActivity extends AppCompatActivity {
     private void aplicarFiltros() {
         String nomeSel = spNomeVendedor.getSelectedItem() == null
                 ? "" : spNomeVendedor.getSelectedItem().toString().trim();
+
         String docSel = spDocumentoVendedor.getSelectedItem() == null
                 ? "" : spDocumentoVendedor.getSelectedItem().toString().trim();
+
         String lotSel = spLoteria.getSelectedItem() == null
                 ? "" : spLoteria.getSelectedItem().toString().trim();
 
@@ -259,6 +272,7 @@ public class RelatoriosActivity extends AppCompatActivity {
         Date dFim = endOfDay(parseDateOrNull(dataFim));
 
         bilhetesFiltrados.clear();
+
         for (BilheteModel b : bilhetesAll) {
             if (matches(b, nomeSel, docSel, lotSel, dIni, dFim, idBilheteFiltro)) {
                 bilhetesFiltrados.add(b);
@@ -277,10 +291,9 @@ public class RelatoriosActivity extends AppCompatActivity {
             Date dFim,
             String idBilheteFiltro
     ) {
-
-        boolean okNome      = isEmpty(nome)            || contains(b.getNome_vendedor(), nome);
-        boolean okDoc       = isEmpty(doc)             || contains(b.getDocumento_vendedor(), doc);
-        boolean okLot       = isEmpty(loteria)         || contains(b.getLoteria(), loteria);
+        boolean okNome = isEmpty(nome) || contains(b.getNome_vendedor(), nome);
+        boolean okDoc = isEmpty(doc) || equalsNormalized(b.getDocumento_vendedor(), doc);
+        boolean okLot = isEmpty(loteria) || contains(b.getLoteria(), loteria);
         boolean okIdBilhete = isEmpty(idBilheteFiltro) || contains(b.get_id(), idBilheteFiltro);
 
         Date dataBilhete = parseDateOrNull(formatDate(b.getData()));
@@ -297,9 +310,9 @@ public class RelatoriosActivity extends AppCompatActivity {
     }
 
     private Date parseDateOrNull(String s) {
-        if (s == null || s.isEmpty()) return null;
+        if (s == null || s.trim().isEmpty()) return null;
         try {
-            return sdfData.parse(s);
+            return sdfData.parse(s.trim());
         } catch (ParseException e) {
             return null;
         }
@@ -317,31 +330,34 @@ public class RelatoriosActivity extends AppCompatActivity {
     }
 
     private boolean isEmpty(String s) {
-        return s == null || s.isEmpty();
+        return s == null || s.trim().isEmpty();
     }
 
     private boolean contains(String hay, String needle) {
         if (hay == null) return false;
-        return normalize(hay).contains(normalize(needle));
+        return normalize(hay.trim()).contains(normalize(needle.trim()));
+    }
+
+    private boolean equalsNormalized(String a, String b) {
+        return normalize(safe(a).trim()).equals(normalize(safe(b).trim()));
     }
 
     private String normalize(String s) {
         String n = Normalizer.normalize(s == null ? "" : s, Normalizer.Form.NFD);
-        return n.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase(Locale.ROOT);
+        return n.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase(Locale.ROOT).trim();
     }
 
     private String formatDate(String raw) {
-        return raw;
+        return raw == null ? "" : raw.trim();
     }
 
-    // ====== PDF formatado + compartilhamento WhatsApp ======
     private void gerarPdf(List<BilheteModel> itens) {
         if (itens == null || itens.isEmpty()) {
             Toast.makeText(this, "Nada para gerar no PDF", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        final int PAGE_W = 595, PAGE_H = 842;  // A4 em ~72dpi
+        final int PAGE_W = 595, PAGE_H = 842;
         final int MARGIN = 36;
         final int CONTENT_W = PAGE_W - (MARGIN * 2);
 
@@ -371,7 +387,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         divider.setStrokeWidth(1f);
         divider.setAlpha(140);
 
-        // TOTAL (header) grande, destacado e centralizado
         Paint totalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         totalPaint.setTextSize(20.5f);
         totalPaint.setFakeBoldText(true);
@@ -379,14 +394,13 @@ public class RelatoriosActivity extends AppCompatActivity {
 
         Paint totalBg = new Paint(Paint.ANTI_ALIAS_FLAG);
         totalBg.setStyle(Paint.Style.FILL);
-        totalBg.setColor(Color.parseColor("#EAEAEA")); // fundo claro
+        totalBg.setColor(Color.parseColor("#EAEAEA"));
         totalBg.setAlpha(255);
 
         final int VALOR_UNITARIO = 10;
         final Locale PTBR = new Locale("pt", "BR");
         java.text.NumberFormat money = java.text.NumberFormat.getCurrencyInstance(PTBR);
 
-        // ===== calcula TOTAIS ANTES para entrar no header =====
         int totalNumeros = 0;
         double totalValor = 0;
         for (BilheteModel b : itens) {
@@ -398,7 +412,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         String totalTxt = "Total de números: " + totalNumeros +
                 "    |    Valor total: " + money.format(totalValor);
 
-        // ===== filtros: só os aplicados =====
         String filtrosAplicados = resumoFiltrosAplicados();
 
         PdfDocument doc = new PdfDocument();
@@ -411,25 +424,20 @@ public class RelatoriosActivity extends AppCompatActivity {
 
         int y = MARGIN;
 
-        // Cabeçalho (com total grande centralizado + filtros aplicados)
         y = drawHeader(canvas, title, sub, divider, totalPaint, totalBg,
                 PAGE_W, CONTENT_W, MARGIN, y, totalTxt, filtrosAplicados);
 
         for (BilheteModel b : itens) {
-
             List<String> linhasBilhete = buildBilheteLines(b, VALOR_UNITARIO, money);
 
             int cardPadding = 10;
             int lineHeight = (int) (value.getTextSize() + 8);
-
             final int TITLE_EXTRA_GAP = 8;
             int headerH = (int) (label.getTextSize() + 10 + TITLE_EXTRA_GAP);
 
             List<String> wrapped = new ArrayList<>();
             for (String ln : linhasBilhete) {
-                wrapped.addAll(
-                        wrapText(ln, value, CONTENT_W - (cardPadding * 2))
-                );
+                wrapped.addAll(wrapText(ln, value, CONTENT_W - (cardPadding * 2)));
             }
 
             int bodyH = wrapped.size() * lineHeight;
@@ -506,12 +514,10 @@ public class RelatoriosActivity extends AppCompatActivity {
                            String totalTxt,
                            String filtrosAplicados) {
 
-        // TOTAL grande centralizado e destacado (com fundo)
         y += drawCenteredWrappedTextWithBg(canvas, totalTxt, totalPaint, totalBg,
                 margin, y, contentW, pageW);
         y += 10;
 
-        // Título do relatório
         canvas.drawText("Relatório de Bilhetes", margin, y + title.getTextSize(), title);
         y += (int) (title.getTextSize() + 6);
 
@@ -520,8 +526,7 @@ public class RelatoriosActivity extends AppCompatActivity {
         canvas.drawText("Gerado em " + data, margin, y + sub.getTextSize(), sub);
         y += (int) (sub.getTextSize() + 6);
 
-        // Filtros (somente aplicados)
-        if (!isEmpty(filtrosAplicados)) {
+        if (!isEmpty(filtrosAplicados) && !"Nenhum".equalsIgnoreCase(filtrosAplicados)) {
             String linha = "Filtros aplicados: " + filtrosAplicados;
             y += drawWrappedText(canvas, linha, sub, margin, y, contentW);
             y += 4;
@@ -533,10 +538,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         return y;
     }
 
-    /**
-     * Desenha texto CENTRALIZADO, quebrando linhas, com FUNDO (destaque).
-     * Retorna a altura total ocupada.
-     */
     private int drawCenteredWrappedTextWithBg(Canvas canvas,
                                               String text,
                                               Paint textPaint,
@@ -762,10 +763,6 @@ public class RelatoriosActivity extends AppCompatActivity {
         return (s == null) ? "" : s;
     }
 
-    /**
-     * Retorna SOMENTE os filtros aplicados (ignora "Todos" e vazios).
-     * Se nenhum estiver aplicado, retorna "Nenhum".
-     */
     @SuppressLint("DefaultLocale")
     private String resumoFiltrosAplicados() {
         List<String> parts = new ArrayList<>();

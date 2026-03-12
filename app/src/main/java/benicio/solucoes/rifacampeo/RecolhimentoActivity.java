@@ -121,7 +121,7 @@ public class RecolhimentoActivity extends AppCompatActivity {
         boolean modoRecolhedor = b != null && b.getBoolean("recolhedor", false);
 
         if (!modoRecolhedor) {
-            mainBinding.textRecolhedor.setVisibility(View.GONE);
+            //mainBinding.textRecolhedor.setVisibility(View.GONE);
             mainBinding.edtRecolhedor.setVisibility(View.GONE);
             mainBinding.button9.setVisibility(View.GONE);
 
@@ -167,30 +167,39 @@ public class RecolhimentoActivity extends AppCompatActivity {
             startActivity(i);
         });
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        String dataAtual = sdf.format(new Date());
+        mainBinding.etDataInicio.setText(dataAtual);
+        mainBinding.etDataFim.setText(dataAtual);
+
         mainBinding.btnFiltrar.setOnClickListener(v -> {
-            if (!validarRecolhedor(true)) return;
-            //if (!validarVendedor(true)) return;
-
-            String vendedor = mainBinding.edtVendedor.getText().toString().trim();
-            if (vendedor.isEmpty() || vendedor.equalsIgnoreCase("Todos")) vendedor = null;
-
-            String dataInicio = mainBinding.etDataInicio.getText().toString().trim();
-            String dataFim = mainBinding.etDataFim.getText().toString().trim();
-            if (dataInicio.isEmpty()) dataInicio = null;
-            if (dataFim.isEmpty()) dataFim = null;
-
-            String recolhedorFiltro = mainBinding.edtRecolhedor.getText().toString().trim();
-            if (recolhedorFiltro.isEmpty()) recolhedorFiltro = null;
-
-            Integer tipo = null;
-
-            filtrarRecolhimentos(vendedor, dataInicio, dataFim, tipo, recolhedorFiltro);
+            filtarAction();
         });
 
         mainBinding.etDataInicio.setOnClickListener(v -> mostrarDatePicker(mainBinding.etDataInicio));
         mainBinding.etDataFim.setOnClickListener(v -> mostrarDatePicker(mainBinding.etDataFim));
 
         mainBinding.btnGerarRelatorio.setOnClickListener(v -> gerarPdfRecolhimentos(lista_recolhimento));
+    }
+
+    private void filtarAction(){
+        if (!validarRecolhedor(true)) return;
+        //if (!validarVendedor(true)) return;
+
+        String vendedor = mainBinding.edtVendedor.getText().toString().trim();
+        if (vendedor.isEmpty() || vendedor.equalsIgnoreCase("Todos")) vendedor = null;
+
+        String dataInicio = mainBinding.etDataInicio.getText().toString().trim();
+        String dataFim = mainBinding.etDataFim.getText().toString().trim();
+        if (dataInicio.isEmpty()) dataInicio = null;
+        if (dataFim.isEmpty()) dataFim = null;
+
+        String recolhedorFiltro = mainBinding.edtRecolhedor.getText().toString().trim();
+        if (recolhedorFiltro.isEmpty()) recolhedorFiltro = null;
+
+        Integer tipo = null;
+
+        filtrarRecolhimentos(vendedor, dataInicio, dataFim, tipo, recolhedorFiltro);
     }
 
     // =======================

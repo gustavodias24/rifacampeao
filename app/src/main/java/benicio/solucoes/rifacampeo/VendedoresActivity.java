@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,9 +30,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import benicio.solucoes.rifacampeo.adapters.AdapterVendedores;
@@ -71,7 +75,6 @@ public class VendedoresActivity extends AppCompatActivity {
         rvVendedores = mainBinding.rvvendedores;
         configurarRV();
 
-        // ------------ FILTRO DE NOME DO VENDEDOR ------------
         mainBinding.edtFiltroVendedor.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -88,10 +91,8 @@ public class VendedoresActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
-        // -----------------------------------------------------
 
         mainBinding.relatoriovendedor.setOnClickListener(v -> {
-
             showLoadingDialog(this);
 
             RetrofitUtils.getApiService().returnBilhetes(3, new QueryModelEmpty())
@@ -100,10 +101,8 @@ public class VendedoresActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<List<BilheteModel>> call, Response<List<BilheteModel>> response) {
                             if (response.isSuccessful() && response.body() != null) {
-
                                 List<BilheteModel> bilhetes = response.body();
                                 gerarPdfVendedores(vendedores, bilhetes);
-
                             } else {
                                 Toast.makeText(VendedoresActivity.this,
                                         "Resposta inválida da API", Toast.LENGTH_SHORT).show();
@@ -118,7 +117,6 @@ public class VendedoresActivity extends AppCompatActivity {
                             hideLoadingDialog();
                         }
                     });
-
         });
 
         mainBinding.recolhimento.setOnClickListener(v2 -> {
@@ -126,8 +124,6 @@ public class VendedoresActivity extends AppCompatActivity {
             i.putExtra("recolhedor", false);
             startActivity(i);
         });
-
-
     }
 
     @Override
@@ -164,7 +160,6 @@ public class VendedoresActivity extends AppCompatActivity {
                                 adapterVendedores.atualizarLista(vendedores);
                             }
 
-                            // 👉 GARANTE QUE AO ENTRAR NA TELA MOSTRE TUDO
                             String textoFiltro = mainBinding.edtFiltroVendedor.getText().toString();
                             adapterVendedores.filtrarPorNome(textoFiltro);
 
@@ -219,8 +214,6 @@ public class VendedoresActivity extends AppCompatActivity {
                 return;
             }
 
-            // Como seu endpoint é saveVendedores e o modelo é VendedorModel,
-            // aqui a gente preenche os campos que NÃO existem no layout com padrão.
             int comissao = 0;
             int limiteAposta = 0;
             String despesas = "";
@@ -264,55 +257,111 @@ public class VendedoresActivity extends AppCompatActivity {
 
     private void configuarDialog() {
         AlertDialog.Builder b = new AlertDialog.Builder(VendedoresActivity.this);
+        LayoutInputVendedorBinding inputVendedorBinding =
+                LayoutInputVendedorBinding.inflate(getLayoutInflater());
 
-        LayoutInputVendedorBinding inputVendedorBinding = LayoutInputVendedorBinding.inflate(getLayoutInflater());
+        configurarAutocompleteRecolhe(inputVendedorBinding);
+
+        inputVendedorBinding.edtDocumento.setOnClickListener(v -> inputVendedorBinding.edtDocumento.showDropDown());
+        inputVendedorBinding.edtDocumento.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                inputVendedorBinding.edtDocumento.showDropDown();
+            }
+        });
 
         inputVendedorBinding.cadatrar.setOnClickListener(v -> {
-            if (inputVendedorBinding.edtComissao.getText().toString().isEmpty()) {
-                Toast.makeText(this, "Comissão não pode ser vazio", Toast.LENGTH_SHORT).show();
-            } else {
-                if (inputVendedorBinding.edtSenha.getText().toString().length() != 6) {
-                    Toast.makeText(this, "A senha precisa ter 6 dígitos numéricos!", Toast.LENGTH_SHORT).show();
-                } else {
+            String nome = inputVendedorBinding.edtNome.getText().toString().trim();
+            String recolhe = inputVendedorBinding.edtDocumento.getText().toString().trim();
+            String celular = inputVendedorBinding.edtCelular.getText().toString().trim();
+            String despesas = inputVendedorBinding.edtDespesas.getText().toString().trim();
+            String senha = inputVendedorBinding.edtSenha.getText().toString().trim();
+            String comissaoStr = inputVendedorBinding.edtComissao.getText().toString().trim();
+            String limiteApostaStr = inputVendedorBinding.edtLimiteaposta.getText().toString().trim();
 
-                    int limiteAposta = 0;
-                    try {
-                        limiteAposta = Integer.parseInt(inputVendedorBinding.edtLimiteaposta.getText().toString());
-                    } catch (Exception ignored) {
-                    }
-
-                    RetrofitUtils.getApiService().saveVendedores(new VendedorModel(
-                            inputVendedorBinding.edtCelular.getText().toString(),
-                            inputVendedorBinding.edtNome.getText().toString(),
-                            UUID.randomUUID().toString(),
-                            inputVendedorBinding.edtSenha.getText().toString(),
-                            inputVendedorBinding.edtDespesas.getText().toString(),
-                            "",
-                            Integer.parseInt(!inputVendedorBinding.edtComissao.getText().toString().isEmpty() ?
-                                    inputVendedorBinding.edtComissao.getText().toString() : "0"),
-                            inputVendedorBinding.radioAtivo.isChecked(),
-                            inputVendedorBinding.edtDocumento.getText().toString(),
-                            limiteAposta
-                    )).enqueue(new Callback<RetornoModel>() {
-                        @Override
-                        public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
-                            if (response.isSuccessful()) {
-                                Toast.makeText(VendedoresActivity.this, "Cadastrado!", Toast.LENGTH_SHORT).show();
-                                listarVendedores(VendedoresActivity.this);
-                                dialogVendedor.dismiss();
-                            } else {
-                                Toast.makeText(VendedoresActivity.this, "Problema de Conexão!", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<RetornoModel> call, Throwable throwable) {
-
-                        }
-                    });
-                }
+            if (nome.isEmpty()) {
+                inputVendedorBinding.edtNome.setError("Nome é obrigatório");
+                inputVendedorBinding.edtNome.requestFocus();
+                return;
             }
 
+            if (recolhe.isEmpty()) {
+                inputVendedorBinding.edtDocumento.setError("Recolhe é obrigatório");
+                inputVendedorBinding.edtDocumento.requestFocus();
+                return;
+            }
+
+            if (!nomeExisteNaLista(recolhe)) {
+                inputVendedorBinding.edtDocumento.setError("Selecione um nome válido da lista");
+                inputVendedorBinding.edtDocumento.requestFocus();
+                return;
+            }
+
+            if (celular.isEmpty()) {
+                inputVendedorBinding.edtCelular.setError("Celular é obrigatório");
+                inputVendedorBinding.edtCelular.requestFocus();
+                return;
+            }
+
+            if (comissaoStr.isEmpty()) {
+                inputVendedorBinding.edtComissao.setError("Comissão não pode ser vazia");
+                inputVendedorBinding.edtComissao.requestFocus();
+                return;
+            }
+
+            if (senha.length() != 6) {
+                inputVendedorBinding.edtSenha.setError("A senha precisa ter 6 dígitos numéricos");
+                inputVendedorBinding.edtSenha.requestFocus();
+                return;
+            }
+
+            int limiteAposta = 0;
+            try {
+                if (!limiteApostaStr.isEmpty()) {
+                    limiteAposta = (int) Double.parseDouble(limiteApostaStr);
+                }
+            } catch (Exception e) {
+                inputVendedorBinding.edtLimiteaposta.setError("Limite de aposta inválido");
+                inputVendedorBinding.edtLimiteaposta.requestFocus();
+                return;
+            }
+
+            int comissao;
+            try {
+                comissao = (int) Double.parseDouble(comissaoStr);
+            } catch (Exception e) {
+                inputVendedorBinding.edtComissao.setError("Comissão inválida");
+                inputVendedorBinding.edtComissao.requestFocus();
+                return;
+            }
+
+            RetrofitUtils.getApiService().saveVendedores(new VendedorModel(
+                    celular,
+                    nome,
+                    UUID.randomUUID().toString(),
+                    senha,
+                    despesas,
+                    "",
+                    comissao,
+                    inputVendedorBinding.radioAtivo.isChecked(),
+                    recolhe,
+                    limiteAposta
+            )).enqueue(new Callback<RetornoModel>() {
+                @Override
+                public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(VendedoresActivity.this, "Cadastrado!", Toast.LENGTH_SHORT).show();
+                        listarVendedores(VendedoresActivity.this);
+                        dialogVendedor.dismiss();
+                    } else {
+                        Toast.makeText(VendedoresActivity.this, "Problema de Conexão!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<RetornoModel> call, Throwable throwable) {
+                    Toast.makeText(VendedoresActivity.this, "Falha ao cadastrar!", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         b.setView(inputVendedorBinding.getRoot());
@@ -320,9 +369,56 @@ public class VendedoresActivity extends AppCompatActivity {
         dialogVendedor.show();
     }
 
-    // ==================== PDF (mesmo que você já tem) ====================
-    // (mantive igual ao seu, só não cortei nada)
-    // --------------------------------------------------------------------
+    private void configurarAutocompleteRecolhe(LayoutInputVendedorBinding inputVendedorBinding) {
+        List<String> nomesVendedores = obterNomesVendedores();
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                nomesVendedores
+        );
+
+        inputVendedorBinding.edtDocumento.setAdapter(adapter);
+        inputVendedorBinding.edtDocumento.setThreshold(1);
+    }
+
+    private List<String> obterNomesVendedores() {
+        Set<String> nomesUnicos = new LinkedHashSet<>();
+
+        for (VendedorModel vendedor : vendedores) {
+            if (vendedor != null && vendedor.getNome() != null) {
+                String nome = vendedor.getNome().trim();
+                if (!nome.isEmpty()) {
+                    nomesUnicos.add(nome);
+                }
+            }
+        }
+
+        return new ArrayList<>(nomesUnicos);
+    }
+
+    private boolean nomeExisteNaLista(String nomeDigitado) {
+        String nomeNormalizadoDigitado = normalizarTexto(nomeDigitado);
+
+        for (VendedorModel vendedor : vendedores) {
+            if (vendedor != null && vendedor.getNome() != null) {
+                String nomeLista = normalizarTexto(vendedor.getNome().trim());
+                if (nomeLista.equals(nomeNormalizadoDigitado)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null) return "";
+        String textoNormalizado = Normalizer.normalize(texto, Normalizer.Form.NFD);
+        textoNormalizado = textoNormalizado.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        return textoNormalizado.trim().toLowerCase();
+    }
+
     private void gerarPdfVendedores(List<VendedorModel> vendedores,
                                     List<BilheteModel> bilhetes) {
 
@@ -332,7 +428,7 @@ public class VendedoresActivity extends AppCompatActivity {
             return;
         }
 
-        final int PAGE_W = 595, PAGE_H = 842; // A4 ~72dpi
+        final int PAGE_W = 595, PAGE_H = 842;
         final int MARGIN = 36;
         final int CONTENT_W = PAGE_W - (MARGIN * 2);
 
@@ -571,11 +667,9 @@ public class VendedoresActivity extends AppCompatActivity {
         loadingDialog.show();
     }
 
-   public static void hideLoadingDialog() {
-
+    public static void hideLoadingDialog() {
         if (loadingDialog != null && loadingDialog.isShowing()) {
             loadingDialog.dismiss();
         }
     }
-
 }

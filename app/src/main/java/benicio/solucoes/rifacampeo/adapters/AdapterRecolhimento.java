@@ -1,6 +1,7 @@
 package benicio.solucoes.rifacampeo.adapters;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -63,26 +64,53 @@ public class AdapterRecolhimento extends RecyclerView.Adapter<AdapterRecolhiment
     private void compartilharRecolhimento(RecolheuModel item) {
         String mensagem = montarMensagemWhatsApp(item);
 
-        // 1) Business > 2) Normal
-        String pkg = getWhatsAppPreferido();
+        // monta link universal do WhatsApp
+        String url = "https://wa.me/?text=" + Uri.encode(mensagem);
 
-        if (pkg != null) {
-            Intent send = new Intent(Intent.ACTION_SEND);
-            send.setType("text/plain");
-            send.putExtra(Intent.EXTRA_TEXT, mensagem);
-            send.setPackage(pkg);
-            a.startActivity(send);
+        // 1) tenta abrir no WhatsApp Business
+        if (abrirLinkNoWhatsApp(url, "com.whatsapp.w4b")) {
             return;
         }
 
-        // 3) Sem WhatsApp => abre no navegador
-        abrirNoNavegadorComMensagem(mensagem);
+        // 2) tenta abrir no WhatsApp normal
+        if (abrirLinkNoWhatsApp(url, "com.whatsapp")) {
+            return;
+        }
+
+        // 3) fallback: abre navegador / chooser
+        abrirLinkExterno(url);
     }
 
-    private String getWhatsAppPreferido() {
-        if (isPackageInstalled("com.whatsapp.w4b")) return "com.whatsapp.w4b"; // Business primeiro
-        if (isPackageInstalled("com.whatsapp")) return "com.whatsapp";         // Normal depois
-        return null;
+    private boolean abrirLinkNoWhatsApp(String url, String packageName) {
+        if (!isPackageInstalled(packageName)) {
+            return false;
+        }
+
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            intent.setPackage(packageName);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            a.startActivity(intent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void abrirLinkExterno(String url) {
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            Intent chooser = Intent.createChooser(browserIntent, "Abrir com");
+            a.startActivity(chooser);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(a, "Nenhum aplicativo disponível para abrir o link.", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(a, "Erro ao abrir link do WhatsApp.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private boolean isPackageInstalled(String packageName) {
@@ -91,17 +119,8 @@ public class AdapterRecolhimento extends RecyclerView.Adapter<AdapterRecolhiment
             return true;
         } catch (PackageManager.NameNotFoundException e) {
             return false;
-        }
-    }
-
-    private void abrirNoNavegadorComMensagem(String mensagem) {
-        String url = "https://wa.me/?text=" + Uri.encode(mensagem);
-        Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-
-        if (browser.resolveActivity(a.getPackageManager()) != null) {
-            a.startActivity(browser);
-        } else {
-            Toast.makeText(a, "Nenhum navegador disponível para abrir o link.", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -113,9 +132,17 @@ public class AdapterRecolhimento extends RecyclerView.Adapter<AdapterRecolhiment
                 : (r.getTipo() == 1) ? "Pagamento"
                 : "Tipo " + r.getTipo();
 
-        String vendedor = (r.getVendedor() == null || r.getVendedor().trim().isEmpty()) ? "-" : r.getVendedor().trim();
-        String data = (r.getDataHoraAtual() == null || r.getDataHoraAtual().trim().isEmpty()) ? "-" : r.getDataHoraAtual().trim();
-        String recolhedor = (r.getRecolhedor() == null || r.getRecolhedor().trim().isEmpty()) ? "-" : r.getRecolhedor().trim();
+        String vendedor = (r.getVendedor() == null || r.getVendedor().trim().isEmpty())
+                ? "-"
+                : r.getVendedor().trim();
+
+        String data = (r.getDataHoraAtual() == null || r.getDataHoraAtual().trim().isEmpty())
+                ? "-"
+                : r.getDataHoraAtual().trim();
+
+        String recolhedor = (r.getRecolhedor() == null || r.getRecolhedor().trim().isEmpty())
+                ? "-"
+                : r.getRecolhedor().trim();
 
         StringBuilder sb = new StringBuilder();
         sb.append("📌 *").append(tipoDesc).append("*\n\n");
