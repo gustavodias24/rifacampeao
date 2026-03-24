@@ -51,10 +51,18 @@
         <Button
             android:id="@+id/recolhimento"
             android:layout_width="match_parent"
-            android:textColor="@color/white"
-            android:backgroundTint="@android:color/holo_green_dark"
             android:layout_height="wrap_content"
-            android:text="recolhimento/pagamento" />
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:text="Relatório recolhimento/pagamento"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/relatoriosaldo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/purple_500"
+            android:text="Relatório de saldo"
+            android:textColor="@color/white" />
 
         <Button
             android:id="@+id/relatoriovendedor"

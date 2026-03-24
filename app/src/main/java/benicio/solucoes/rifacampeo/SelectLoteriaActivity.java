@@ -56,6 +56,8 @@ public class SelectLoteriaActivity extends AppCompatActivity {
 
     float saldoVendedor = 0.0f;
 
+    private SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +68,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
         b = getIntent().getExtras();
         sharedPreferences = getSharedPreferences("info", MODE_PRIVATE);
 
-
+        prefs = getSharedPreferences("rprefs", MODE_PRIVATE);
 
         selectLoteriaBinding.button7.setOnClickListener(v -> {
             if (limiteAposta <= somaBilhetes && saldoVendedor > 0) {
@@ -112,7 +114,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
         vendedorModel.setDocumento(sharedPreferences.getString("documento_vendedor", ""));
         vendedorModel.setSenha(sharedPreferences.getString("senha", ""));
 
-        vendedorModel.setSerial(getDeviceUniqueId());
+        vendedorModel.setSerial(prefs.getString("string_unica_app", null));
         RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
             @Override
             public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response1) {

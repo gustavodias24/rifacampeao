@@ -25,6 +25,9 @@
         android:theme="@style/Theme.RifaCampeão"
         tools:targetApi="31">
         <activity
+            android:name=".RecolheRelatorioActivity"
+            android:exported="false" />
+        <activity
             android:name=".TestActivity"
             android:exported="false" />
         <activity

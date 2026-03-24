@@ -116,30 +116,40 @@ public class AdapterVendedores extends RecyclerView.Adapter<AdapterVendedores.My
 
         // DELETE VENDEDOR
         holder.delete_vendedor.setOnClickListener(v -> {
-            int pos = holder.getBindingAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) return;
 
-            VendedorModel vendedor = lista.get(pos);
+            Dialog dialogDelete =  new AlertDialog.Builder(a)
+                    .setTitle("Deletar Vendedor")
+                    .setMessage("Tem certeza que deseja deletar esse vendedor?")
+                    .setPositiveButton("Sim", (x,b) -> {int pos = holder.getBindingAdapterPosition();
+                        if (pos == RecyclerView.NO_POSITION) return;
 
-            RetrofitUtils.getApiService().vendedor_delete(vendedor.get_id())
-                    .enqueue(new Callback<RetornoModel>() {
-                        @Override
-                        public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
-                            if (response.isSuccessful()) {
-                                Toast.makeText(a, "Vendedor deletado", Toast.LENGTH_SHORT).show();
+                        VendedorModel vendedor = lista.get(pos);
 
-                                // Mais seguro: recarrega tudo pela API
-                                VendedoresActivity.listarVendedores(a);
-                            } else {
-                                Toast.makeText(a, "Problema ao deletar vendedor", Toast.LENGTH_SHORT).show();
-                            }
-                        }
+                        RetrofitUtils.getApiService().vendedor_delete(vendedor.get_id())
+                                .enqueue(new Callback<RetornoModel>() {
+                                    @Override
+                                    public void onResponse(Call<RetornoModel> call, Response<RetornoModel> response) {
+                                        if (response.isSuccessful()) {
+                                            Toast.makeText(a, "Vendedor deletado", Toast.LENGTH_SHORT).show();
 
-                        @Override
-                        public void onFailure(Call<RetornoModel> call, Throwable throwable) {
-                            Toast.makeText(a, "Erro ao deletar: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                                            // Mais seguro: recarrega tudo pela API
+                                            VendedoresActivity.listarVendedores(a);
+                                        } else {
+                                            Toast.makeText(a, "Problema ao deletar vendedor", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<RetornoModel> call, Throwable throwable) {
+                                        Toast.makeText(a, "Erro ao deletar: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });})
+                    .setNegativeButton("Não", null).create();
+
+            dialogDelete.show();
+
+
+
         });
 
         // ENTRADA / SAÍDA VENDEDOR

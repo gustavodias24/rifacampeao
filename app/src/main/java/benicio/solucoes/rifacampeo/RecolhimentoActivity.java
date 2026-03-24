@@ -1,6 +1,7 @@
 package benicio.solucoes.rifacampeo;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -12,13 +13,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
@@ -61,21 +62,21 @@ public class RecolhimentoActivity extends AppCompatActivity {
     private SharedPreferences prefs;
     private SharedPreferences.Editor edt;
 
-    // =======================
-    // AUTOCOMPLETE RECOLHEDOR
-    // =======================
     private ArrayAdapter<String> adapterRecolhedor;
     private final List<String> recolhedoresAll = new ArrayList<>();
-    private ColorStateList recolhedorTintNormal;
-    private boolean recolhedorBloqueado = false;
 
-    // =====================
-    // AUTOCOMPLETE VENDEDOR
-    // =====================
     private ArrayAdapter<String> adapterNomes;
     private final List<String> vendedoresAll = new ArrayList<>();
     private ColorStateList vendedorTintNormal;
-    private boolean vendedorBloqueado = false;
+
+    // filtros atuais usados também no PDF
+    private String filtroAtualVendedor;
+    private String filtroAtualDataInicio;
+    private String filtroAtualDataFim;
+    private String filtroAtualRecolhedor;
+    private Integer filtroAtualTipo;
+
+    Dialog drelatoriosaldo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +86,9 @@ public class RecolhimentoActivity extends AppCompatActivity {
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        // =======================
-        // SETUP AUTOCOMPLETE RECOLHEDOR
-        // =======================
+
+
+
         adapterRecolhedor = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_dropdown_item_1line,
@@ -97,9 +98,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
         mainBinding.edtRecolhedor.setThreshold(0);
         configurarAutocompleteRecolhedor();
 
-        // =====================
-        // SETUP AUTOCOMPLETE VENDEDOR
-        // =====================
         adapterNomes = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_dropdown_item_1line,
@@ -115,47 +113,61 @@ public class RecolhimentoActivity extends AppCompatActivity {
         edt = prefs.edit();
 
         nomeRecolhedor = prefs.getString("recolhedor", "");
+
+        drelatoriosaldo = new AlertDialog.Builder(this).setMessage("Gerando...").setCancelable(false).create();
+        mainBinding.relatoriosaldo.setOnClickListener(v -> {
+
+
+            drelatoriosaldo.show();
+
+            RetrofitUtils.getApiService()
+                    .retornar_recolhimento(null, null, null, null, 999999999, 1)
+                    .enqueue(new Callback<RecolhimentoResponse>() {
+                        @Override
+                        public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
+                            if (response.isSuccessful()) {
+                                gerarPdfVendedores(vendedores, nomeRecolhedor, response.body().itens);
+                                drelatoriosaldo.dismiss();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<RecolhimentoResponse> call, Throwable throwable) {
+                            Toast.makeText(RecolhimentoActivity.this, throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                            drelatoriosaldo.dismiss();
+                        }
+                    });
+
+        });
+
         mainBinding.edtRecolhedor.setText(nomeRecolhedor);
 
-        Bundle b = getIntent().getExtras();
-        boolean modoRecolhedor = b != null && b.getBoolean("recolhedor", false);
+        boolean modoRecolhedor = isModoRecolhedor();
 
         if (!modoRecolhedor) {
-            //mainBinding.textRecolhedor.setVisibility(View.GONE);
             mainBinding.edtRecolhedor.setVisibility(View.GONE);
             mainBinding.button9.setVisibility(View.GONE);
-
-
-            // se escondeu o recolhedor, garante que ele não bloqueia nada
-            //setBloqueioRecolhedor(false);
         } else {
-            // ✅ Somente leitura (não permite digitar)
             mainBinding.edtRecolhedor.setKeyListener(null);
             mainBinding.edtRecolhedor.setCursorVisible(false);
-
-            // (opcional) evita colar texto
             mainBinding.edtRecolhedor.setLongClickable(false);
             mainBinding.edtRecolhedor.setTextIsSelectable(false);
             mainBinding.btnGerarRelatorio.setVisibility(View.GONE);
         }
 
-        // carrega vendedores via API (preenche adapter + valida)
         carregarVendedores();
 
         mainBinding.button9.setOnClickListener(v -> {
             if (!validarRecolhedor(true)) return;
-            //if (!validarVendedor(true)) return;
 
             nomeRecolhedor = mainBinding.edtRecolhedor.getText().toString().trim();
             edt.putString("recolhedor", nomeRecolhedor).apply();
-            Toast.makeText(this, "Recolhedor Salvo!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Recolhedor salvo!", Toast.LENGTH_SHORT).show();
         });
 
         mainBinding.btnadd.setOnClickListener(v -> {
-//            if (!validarRecolhedor(true)) return;
-            //if (!validarVendedor(true)) return;
-
             nomeRecolhedor = mainBinding.edtRecolhedor.getText().toString().trim();
+
             if (nomeRecolhedor.isEmpty()) {
                 Toast.makeText(this, "Insira um nome de recolhedor!", Toast.LENGTH_SHORT).show();
                 return;
@@ -169,80 +181,239 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String dataAtual = sdf.format(new Date());
+
         mainBinding.etDataInicio.setText(dataAtual);
         mainBinding.etDataFim.setText(dataAtual);
 
-        mainBinding.btnFiltrar.setOnClickListener(v -> {
-            filtarAction();
-        });
+        filtroAtualDataInicio = dataAtual;
+        filtroAtualDataFim = dataAtual;
+
+        mainBinding.btnFiltrar.setOnClickListener(v -> filtarAction());
 
         mainBinding.etDataInicio.setOnClickListener(v -> mostrarDatePicker(mainBinding.etDataInicio));
         mainBinding.etDataFim.setOnClickListener(v -> mostrarDatePicker(mainBinding.etDataFim));
 
         mainBinding.btnGerarRelatorio.setOnClickListener(v -> gerarPdfRecolhimentos(lista_recolhimento));
+
+        filtarAction();
     }
 
-    private void filtarAction(){
-        if (!validarRecolhedor(true)) return;
-        //if (!validarVendedor(true)) return;
+    private int drawHeaderVendedores(Canvas canvas,
+                                     Paint title,
+                                     Paint sub,
+                                     Paint divider,
+                                     int contentW,
+                                     int margin,
+                                     int y,
+                                     String documentoFiltro) {
 
-        String vendedor = mainBinding.edtVendedor.getText().toString().trim();
-        if (vendedor.isEmpty() || vendedor.equalsIgnoreCase("Todos")) vendedor = null;
+        Locale ptBr = new Locale("pt", "BR");
+        String dataGeracao = new SimpleDateFormat("dd/MM/yyyy HH:mm", ptBr).format(new Date());
+        String filtroTexto = !isBlank(documentoFiltro) ? documentoFiltro : "Todos";
 
-        String dataInicio = mainBinding.etDataInicio.getText().toString().trim();
-        String dataFim = mainBinding.etDataFim.getText().toString().trim();
-        if (dataInicio.isEmpty()) dataInicio = null;
-        if (dataFim.isEmpty()) dataFim = null;
+        canvas.drawText("Relatório de Vendedores", margin, y + title.getTextSize(), title);
+        y += (int) (title.getTextSize() + 8);
 
-        String recolhedorFiltro = mainBinding.edtRecolhedor.getText().toString().trim();
-        if (recolhedorFiltro.isEmpty()) recolhedorFiltro = null;
+        canvas.drawText("Gerado em: " + dataGeracao, margin, y + sub.getTextSize(), sub);
+        y += (int) (sub.getTextSize() + 6);
 
-        Integer tipo = null;
+        canvas.drawText("Recolhedor: " + filtroTexto, margin, y + sub.getTextSize(), sub);
+        y += (int) (sub.getTextSize() + 10);
+
+        canvas.drawLine(margin, y, margin + contentW, y, divider);
+        y += 18;
+
+        return y;
+    }
+
+    private void drawFooterPadrao(Canvas canvas,
+                                  Paint small,
+                                  int margin,
+                                  int pageW,
+                                  int pageH,
+                                  int pageNum) {
+        String left = "© " + Calendar.getInstance().get(Calendar.YEAR) + " • Sistema";
+        String right = "Página " + pageNum;
+
+        canvas.drawText(left, margin, pageH - 14, small);
+        float rightW = small.measureText(right);
+        canvas.drawText(right, pageW - margin - rightW, pageH - 14, small);
+    }
+
+    private void gerarPdfVendedores(List<VendedorModel> vendedores,
+                                    String documentoFiltro,
+                                    List<RecolheuModel> recolhimentos) {
+
+        if (vendedores == null || vendedores.isEmpty()) {
+            Toast.makeText(this, "Nenhum vendedor encontrado para gerar o relatório.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<VendedorModel> vendedoresFiltrados = new ArrayList<>();
+
+        String filtroDoc = emptyToNull(documentoFiltro);
+
+        for (VendedorModel vendedor : vendedores) {
+            if (vendedor == null) continue;
+
+            if (isBlank(filtroDoc)) {
+                vendedoresFiltrados.add(vendedor);
+            } else {
+                String docVendedor = safe(vendedor.getDocumento()).trim();
+                if (normalize(docVendedor).equals(normalize(filtroDoc))) {
+                    vendedoresFiltrados.add(vendedor);
+                }
+            }
+        }
+
+        if (vendedoresFiltrados.isEmpty()) {
+            Toast.makeText(this, "Nenhum vendedor encontrado com esse documento.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final int PAGE_W = 595;
+        final int PAGE_H = 842;
+        final int MARGIN = 36;
+        final int CONTENT_W = PAGE_W - (MARGIN * 2);
+
+        Paint title = new Paint();
+        title.setTextSize(18f);
+        title.setFakeBoldText(true);
+
+        Paint sub = new Paint();
+        sub.setTextSize(12f);
+
+        Paint value = new Paint();
+        value.setTextSize(12.5f);
+
+        Paint small = new Paint();
+        small.setTextSize(10f);
+        small.setAlpha(180);
+
+        Paint divider = new Paint();
+        divider.setStrokeWidth(1f);
+        divider.setAlpha(140);
+
+        Locale ptBr = new Locale("pt", "BR");
+
+        PdfDocument doc = new PdfDocument();
+        int pageNum = 1;
+
+        PdfDocument.Page page = doc.startPage(
+                new PdfDocument.PageInfo.Builder(PAGE_W, PAGE_H, pageNum).create()
+        );
+        Canvas canvas = page.getCanvas();
+        int y = MARGIN;
+
+        y = drawHeaderVendedores(canvas, title, sub, divider, CONTENT_W, MARGIN, y, filtroDoc);
+
+        int lineHeight = 24;
+
+        for (VendedorModel vendedor : vendedoresFiltrados) {
+            String nome = !isBlank(vendedor.getNome()) ? vendedor.getNome().trim() : "-";
+            float saldoAtual = vendedor.getSaldoAtual(recolhimentos != null ? recolhimentos : new ArrayList<>());
+            String saldoFmt = String.format(ptBr, "R$ %.2f", saldoAtual);
+
+            String linha = "Nome vendedor: " + nome + "    Saldo deve: " + saldoFmt;
+
+            if (y + 40 > PAGE_H - MARGIN) {
+                drawFooterPadrao(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
+                doc.finishPage(page);
+
+                pageNum++;
+                page = doc.startPage(
+                        new PdfDocument.PageInfo.Builder(PAGE_W, PAGE_H, pageNum).create()
+                );
+                canvas = page.getCanvas();
+                y = MARGIN;
+                y = drawHeaderVendedores(canvas, title, sub, divider, CONTENT_W, MARGIN, y, filtroDoc);
+            }
+
+            canvas.drawText(linha, MARGIN, y, value);
+            y += lineHeight;
+
+            canvas.drawLine(MARGIN, y, MARGIN + CONTENT_W, y, divider);
+            y += 14;
+        }
+
+        drawFooterPadrao(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
+        doc.finishPage(page);
+
+        File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (dir == null) dir = getExternalFilesDir(null);
+
+        String dataArq = new SimpleDateFormat("dd_MM_yyyy_HH_mm", ptBr).format(new Date());
+        File pdf = new File(dir, "relatorio_vendedores_" + dataArq + ".pdf");
+
+        try (FileOutputStream fos = new FileOutputStream(pdf)) {
+            doc.writeTo(fos);
+            Toast.makeText(this, "PDF gerado em: " + pdf.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            compartilharPdf(pdf);
+        } catch (IOException e) {
+            Toast.makeText(this, "Erro ao salvar PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        } finally {
+            doc.close();
+        }
+    }
+
+    private void compartilharPdf(File pdfFile) {
+        try {
+            Uri uri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    pdfFile
+            );
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("application/pdf");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "Segue o relatório em PDF 📄");
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(shareIntent, "Compartilhar PDF"));
+        } catch (Exception e) {
+            Toast.makeText(this, "Erro ao compartilhar PDF.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        listarRecolhimentos();
+    }
+
+
+
+    private boolean isModoRecolhedor() {
+        Bundle b = getIntent().getExtras();
+        return b != null && b.getBoolean("recolhedor", false);
+    }
+
+    private void filtarAction() {
+        String vendedor = emptyToNull(mainBinding.edtVendedor.getText().toString());
+        if (vendedor != null && vendedor.equalsIgnoreCase("Todos")) vendedor = null;
+
+        String dataInicio = emptyToNull(mainBinding.etDataInicio.getText().toString());
+        String dataFim = emptyToNull(mainBinding.etDataFim.getText().toString());
+
+        String recolhedorFiltro = null;
+        if (mainBinding.edtRecolhedor.getVisibility() == View.VISIBLE) {
+            recolhedorFiltro = emptyToNull(mainBinding.edtRecolhedor.getText().toString());
+        }
+
+        Integer tipo = null; // mantém como estava, caso depois exista filtro de tipo na tela
+
+        filtroAtualVendedor = vendedor;
+        filtroAtualDataInicio = dataInicio;
+        filtroAtualDataFim = dataFim;
+        filtroAtualRecolhedor = recolhedorFiltro;
+        filtroAtualTipo = tipo;
 
         filtrarRecolhimentos(vendedor, dataInicio, dataFim, tipo, recolhedorFiltro);
     }
 
-    // =======================
-    // BLOQUEIO UNIFICADO
-    // =======================
-//    private void setBloqueioRecolhedor(boolean bloquear) {
-//        if (recolhedorBloqueado == bloquear) return;
-//        recolhedorBloqueado = bloquear;
-////        atualizarBloqueioTela();
-//    }
-
-//    private void setBloqueioVendedor(boolean bloquear) {
-//        if (vendedorBloqueado == bloquear) return;
-//        vendedorBloqueado = bloquear;
-//        atualizarBloqueioTela();
-//    }
-
-//    private void atualizarBloqueioTela() {
-//        boolean bloquear = recolhedorBloqueado || vendedorBloqueado;
-//
-//        mainBinding.btnFiltrar.setEnabled(!bloquear);
-//        mainBinding.btnadd.setEnabled(!bloquear);
-//        mainBinding.button9.setEnabled(!bloquear);
-//
-//        // não desabilitar edtRecolhedor nem edtVendedor (pra conseguir corrigir)
-//        mainBinding.etDataInicio.setEnabled(!bloquear);
-//        mainBinding.etDataFim.setEnabled(!bloquear);
-//        mainBinding.btnGerarRelatorio.setEnabled(!bloquear);
-//
-//        float alpha = bloquear ? 0.5f : 1f;
-//
-//        mainBinding.etDataInicio.setAlpha(alpha);
-//        mainBinding.etDataFim.setAlpha(alpha);
-//
-//        mainBinding.btnFiltrar.setAlpha(alpha);
-//        mainBinding.btnadd.setAlpha(alpha);
-//        mainBinding.button9.setAlpha(alpha);
-//        mainBinding.btnGerarRelatorio.setAlpha(alpha);
-//    }
-
-    // =======================
-    // DATE PICKER
-    // =======================
     private void mostrarDatePicker(EditText campoAlvo) {
         final Calendar cal = Calendar.getInstance();
         int ano = cal.get(Calendar.YEAR);
@@ -263,9 +434,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
         dp.show();
     }
 
-    // =======================
-    // FILTRO
-    // =======================
     private void filtrarRecolhimentos(String vendedor,
                                       String dataInicio,
                                       String dataFim,
@@ -273,68 +441,45 @@ public class RecolhimentoActivity extends AppCompatActivity {
                                       String recolhedorFiltro) {
 
         lista_recolhimento.clear();
+        adapterRecolhimento.notifyDataSetChanged();
         showLoading(true);
 
-        String vendedorParam = (vendedor != null && !vendedor.trim().isEmpty()) ? vendedor.trim() : null;
-        String dataInicioParam = (dataInicio != null && !dataInicio.trim().isEmpty()) ? dataInicio.trim() : null;
-        String dataFimParam = (dataFim != null && !dataFim.trim().isEmpty()) ? dataFim.trim() : null;
-
+        // Busca tudo e filtra localmente.
+        // Isso corrige problemas quando a API não devolve corretamente pelos parâmetros.
         RetrofitUtils.getApiService()
-                .retornar_recolhimento(
-                        vendedorParam,
-                        dataInicioParam,
-                        dataFimParam,
-                        tipo,
-                        999999999,
-                        1
-                )
+                .retornar_recolhimento(null, null, null, null, 999999999, 1)
                 .enqueue(new Callback<RecolhimentoResponse>() {
                     @Override
                     public void onResponse(Call<RecolhimentoResponse> call,
                                            Response<RecolhimentoResponse> response) {
                         showLoading(false);
 
-                        if (response.isSuccessful() && response.body() != null) {
+                        List<RecolheuModel> itensApi = new ArrayList<>();
+                        if (response.isSuccessful() && response.body() != null && response.body().getItens() != null) {
+                            itensApi.addAll(response.body().getItens());
+                        }
 
-                            lista_recolhimento.clear();
-                            List<RecolheuModel> itensApi = response.body().getItens();
+                        lista_recolhimento.clear();
 
-                            Bundle b = getIntent().getExtras();
-                            boolean modoRecolhedor = b != null && b.getBoolean("recolhedor", false);
+                        boolean modoRecolhedor = isModoRecolhedor();
+                        String nomeFixado = modoRecolhedor ? nomeRecolhedor : null;
 
-                            String recolhedorFiltroNorm = recolhedorFiltro != null ? recolhedorFiltro.trim() : "";
-                            String nomeRecolhedorNorm = nomeRecolhedor != null ? nomeRecolhedor.trim() : "";
-
-                            if (!modoRecolhedor && recolhedorFiltroNorm.isEmpty()) {
-                                lista_recolhimento.addAll(itensApi);
-                            } else {
-                                for (RecolheuModel r : itensApi) {
-                                    String rec = r.getRecolhedor() == null ? "" : r.getRecolhedor().trim();
-
-                                    boolean okTela = true;
-                                    if (modoRecolhedor && !nomeRecolhedorNorm.isEmpty()) {
-                                        okTela = rec.equalsIgnoreCase(nomeRecolhedorNorm);
-                                    }
-
-                                    boolean okFiltro = true;
-                                    if (!recolhedorFiltroNorm.isEmpty()) {
-                                        okFiltro = rec.equalsIgnoreCase(recolhedorFiltroNorm);
-                                    }
-
-                                    if (okTela && okFiltro) {
-                                        lista_recolhimento.add(r);
-                                    }
-                                }
+                        for (RecolheuModel item : itensApi) {
+                            if (passaNosFiltros(item, vendedor, dataInicio, dataFim, tipo, recolhedorFiltro, modoRecolhedor, nomeFixado)) {
+                                lista_recolhimento.add(item);
                             }
+                        }
 
-                            adapterRecolhimento.notifyDataSetChanged();
+                        adapterRecolhimento.notifyDataSetChanged();
+                        atualizarAutocompleteRecolhedor(itensApi);
 
+                        if (lista_recolhimento.isEmpty()) {
                             Toast.makeText(RecolhimentoActivity.this,
-                                    "Filtro aplicado (" + lista_recolhimento.size() + " itens)",
+                                    "Nenhum resultado encontrado",
                                     Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(RecolhimentoActivity.this,
-                                    "Nenhum resultado encontrado",
+                                    "Filtro aplicado (" + lista_recolhimento.size() + " itens)",
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -349,10 +494,104 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        listarRecolhimentos();
+    private boolean passaNosFiltros(RecolheuModel item,
+                                    String vendedorFiltro,
+                                    String dataInicioFiltro,
+                                    String dataFimFiltro,
+                                    Integer tipoFiltro,
+                                    String recolhedorFiltro,
+                                    boolean modoRecolhedor,
+                                    String recolhedorFixado) {
+
+        if (item == null) return false;
+
+        if (modoRecolhedor && !isBlank(recolhedorFixado)) {
+            if (!normalize(item.getRecolhedor()).equals(normalize(recolhedorFixado))) {
+                return false;
+            }
+        }
+
+        if (!isBlank(vendedorFiltro)) {
+            if (!normalize(item.getVendedor()).contains(normalize(vendedorFiltro))) {
+                return false;
+            }
+        }
+
+        if (!isBlank(recolhedorFiltro)) {
+            if (!normalize(item.getRecolhedor()).contains(normalize(recolhedorFiltro))) {
+                return false;
+            }
+        }
+
+        if (tipoFiltro != null && item.getTipo() != tipoFiltro) {
+            return false;
+        }
+
+        return estaDentroDoPeriodo(item.getDataHoraAtual(), dataInicioFiltro, dataFimFiltro);
+    }
+
+    private boolean estaDentroDoPeriodo(String dataItemTexto, String dataInicioTexto, String dataFimTexto) {
+        if (isBlank(dataInicioTexto) && isBlank(dataFimTexto)) return true;
+
+        Date dataItem = parseDateFlex(dataItemTexto);
+        if (dataItem == null) return false;
+
+        Date dataInicio = parseDateFlex(dataInicioTexto);
+        Date dataFim = parseDateFlex(dataFimTexto);
+
+        if (dataInicio != null && dataItem.before(inicioDoDia(dataInicio))) {
+            return false;
+        }
+
+        if (dataFim != null && dataItem.after(fimDoDia(dataFim))) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Date parseDateFlex(String value) {
+        if (isBlank(value)) return null;
+
+        String[] patterns = new String[]{
+                "dd/MM/yyyy HH:mm:ss",
+                "dd/MM/yyyy HH:mm",
+                "dd/MM/yyyy",
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd"
+        };
+
+        for (String pattern : patterns) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(pattern, Locale.getDefault());
+                sdf.setLenient(false);
+                return sdf.parse(value.trim());
+            } catch (Exception ignored) {
+            }
+        }
+
+        return null;
+    }
+
+    private Date inicioDoDia(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTime();
+    }
+
+    private Date fimDoDia(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        c.set(Calendar.MILLISECOND, 999);
+        return c.getTime();
     }
 
     private void listarRecolhimentos() {
@@ -364,30 +603,27 @@ public class RecolhimentoActivity extends AppCompatActivity {
                     public void onResponse(Call<RecolhimentoResponse> call, Response<RecolhimentoResponse> response) {
                         showLoading(false);
 
-                        if (response.isSuccessful() && response.body() != null) {
+                        lista_recolhimento.clear();
 
-                            lista_recolhimento.clear();
+                        if (response.isSuccessful() && response.body() != null && response.body().getItens() != null) {
                             List<RecolheuModel> itensApi = response.body().getItens();
 
-                            Bundle b = getIntent().getExtras();
-                            boolean modoRecolhedor = b != null && b.getBoolean("recolhedor", false);
+                            boolean modoRecolhedor = isModoRecolhedor();
 
                             if (!modoRecolhedor) {
                                 lista_recolhimento.addAll(itensApi);
                             } else {
                                 for (RecolheuModel recolhe : itensApi) {
-                                    if (recolhe.getRecolhedor() != null &&
-                                            recolhe.getRecolhedor().trim().equalsIgnoreCase(nomeRecolhedor.trim())) {
+                                    if (normalize(recolhe.getRecolhedor()).equals(normalize(nomeRecolhedor))) {
                                         lista_recolhimento.add(recolhe);
                                     }
                                 }
                             }
 
-                            adapterRecolhimento.notifyDataSetChanged();
-
-                            // atualiza lista de recolhedores
                             atualizarAutocompleteRecolhedor(itensApi);
                         }
+
+                        adapterRecolhimento.notifyDataSetChanged();
                     }
 
                     @Override
@@ -397,9 +633,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 });
     }
 
-    // =======================
-    // ATUALIZA AUTOCOMPLETE RECOLHEDOR
-    // =======================
     private void atualizarAutocompleteRecolhedor(List<RecolheuModel> itens) {
         LinkedHashSet<String> set = new LinkedHashSet<>();
 
@@ -417,14 +650,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
         adapterRecolhedor.clear();
         adapterRecolhedor.addAll(recolhedoresAll);
         adapterRecolhedor.notifyDataSetChanged();
-
-        CharSequence atual = mainBinding.edtRecolhedor.getText();
-//        adapterRecolhedor.getFilter().filter(atual, count -> {
-//            validarRecolhedor(true);
-//            if (mainBinding.edtRecolhedor.hasFocus()) {
-//                mainBinding.edtRecolhedor.post(() -> mainBinding.edtRecolhedor.showDropDown());
-//            }
-//        });
     }
 
     private void configurarRV() {
@@ -434,9 +659,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
         mainBinding.recolhimentorv.setAdapter(adapterRecolhimento);
     }
 
-    // =======================
-    // CARREGA VENDEDORES (CORRIGIDO PRA NAO CACHEAR VAZIO)
-    // =======================
     private void carregarVendedores() {
         RetrofitUtils.getApiService().returnVendedores(1, new QueryModelEmpty())
                 .enqueue(new Callback<List<VendedorModel>>() {
@@ -447,23 +669,23 @@ public class RecolhimentoActivity extends AppCompatActivity {
                             vendedores.clear();
                             vendedores.addAll(response.body());
 
-                            // lista fonte
-                            vendedoresAll.clear();
-                            vendedoresAll.add("Todos");
+                            LinkedHashSet<String> nomes = new LinkedHashSet<>();
+                            nomes.add("Todos");
 
                             for (VendedorModel v : vendedores) {
                                 String nome = safe(v.getNome()).trim();
-                                if (!nome.isEmpty()) vendedoresAll.add(nome);
+                                if (!nome.isEmpty()) nomes.add(nome);
                             }
 
-                            // atualiza adapter do jeito certo
+                            vendedoresAll.clear();
+                            vendedoresAll.addAll(nomes);
+
                             adapterNomes.clear();
                             adapterNomes.addAll(vendedoresAll);
                             adapterNomes.notifyDataSetChanged();
 
                             CharSequence atual = mainBinding.edtVendedor.getText();
                             adapterNomes.getFilter().filter(atual, count -> {
-                                //validarVendedor(true);
                                 if (mainBinding.edtVendedor.hasFocus()) {
                                     mainBinding.edtVendedor.post(() -> mainBinding.edtVendedor.showDropDown());
                                 }
@@ -489,6 +711,21 @@ public class RecolhimentoActivity extends AppCompatActivity {
         return (s == null) ? "" : s;
     }
 
+    private String emptyToNull(String s) {
+        if (s == null) return null;
+        String txt = s.trim();
+        return txt.isEmpty() ? null : txt;
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    private String normalize(String s) {
+        if (s == null) return "";
+        return s.trim().replaceAll("\\s+", " ").toLowerCase(Locale.getDefault());
+    }
+
     private void showLoading(boolean show) {
         if (show) {
             mainBinding.progressRecolhimento.setVisibility(View.VISIBLE);
@@ -499,12 +736,7 @@ public class RecolhimentoActivity extends AppCompatActivity {
         }
     }
 
-    // ==========================================================
-    // AUTOCOMPLETE RECOLHEDOR (VALIDACAO + BLOQUEIO)
-    // ==========================================================
     private void configurarAutocompleteRecolhedor() {
-        recolhedorTintNormal = ViewCompat.getBackgroundTintList(mainBinding.edtRecolhedor);
-
         mainBinding.edtRecolhedor.setOnClickListener(v -> mostrarDropDownRecolhedor());
 
         mainBinding.edtRecolhedor.setOnFocusChangeListener((v, hasFocus) -> {
@@ -522,9 +754,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 mainBinding.edtRecolhedor.setText(selecionado);
                 mainBinding.edtRecolhedor.setSelection(selecionado.length());
                 nomeRecolhedor = selecionado;
-
-//                // aplicarErroRecolhedor(false);(false);
-                //setBloqueioRecolhedor(false);
             }
         });
 
@@ -538,27 +767,11 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
                 String txt = s.toString().trim();
 
-                if (recolhedoresAll.isEmpty()) {
-                    // aplicarErroRecolhedor(false);(false);
-                    //setBloqueioRecolhedor(false);
-                    return;
-                }
+                if (recolhedoresAll.isEmpty()) return;
 
                 if (txt.isEmpty()) {
-                    // aplicarErroRecolhedor(false);(false);
-                    //setBloqueioRecolhedor(false);
                     mostrarDropDownRecolhedor();
                     return;
-                }
-
-                boolean temSugestao = temSugestaoRecolhedor(txt);
-
-                if (temSugestao) {
-                    // aplicarErroRecolhedor(false);(false);
-                    //setBloqueioRecolhedor(false);
-                } else {
-                    // aplicarErroRecolhedor(false);(true);
-                    //setBloqueioRecolhedor(true);
                 }
 
                 mostrarDropDownRecolhedor();
@@ -583,24 +796,15 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
     private boolean validarRecolhedor(boolean exigirExato) {
         if (mainBinding.edtRecolhedor.getVisibility() != View.VISIBLE) {
-            //setBloqueioRecolhedor(false);
             return true;
         }
 
         String txt = mainBinding.edtRecolhedor.getText().toString().trim();
 
         if (recolhedoresAll.isEmpty()) return true;
-
-        if (txt.isEmpty()) {
-            // aplicarErroRecolhedor(false);(false);
-            //setBloqueioRecolhedor(false);
-            return true;
-        }
+        if (txt.isEmpty()) return true;
 
         boolean ok = exigirExato ? existeRecolhedor(txt) : temSugestaoRecolhedor(txt);
-
-        // aplicarErroRecolhedor(false);(!ok);
-        //setBloqueioRecolhedor(!ok);
 
         if (!ok) {
             mainBinding.edtRecolhedor.requestFocus();
@@ -613,39 +817,21 @@ public class RecolhimentoActivity extends AppCompatActivity {
     }
 
     private boolean existeRecolhedor(String txt) {
-        String t = txt.trim().toLowerCase(Locale.getDefault());
+        String t = normalize(txt);
         for (String n : recolhedoresAll) {
-            if (n != null && n.trim().toLowerCase(Locale.getDefault()).equals(t)) return true;
+            if (normalize(n).equals(t)) return true;
         }
         return false;
     }
 
     private boolean temSugestaoRecolhedor(String txt) {
-        String t = txt.trim().toLowerCase(Locale.getDefault());
+        String t = normalize(txt);
         for (String n : recolhedoresAll) {
-            if (n == null) continue;
-            String nn = n.trim().toLowerCase(Locale.getDefault());
-            if (nn.startsWith(t)) return true;
+            if (normalize(n).startsWith(t)) return true;
         }
         return false;
     }
 
-//    private void // aplicarErroRecolhedor(false);(boolean erro) {
-//        if (erro) {
-//            mainBinding.edtRecolhedor.setError("Selecione um recolhedor da lista");
-//            ViewCompat.setBackgroundTintList(
-//                    mainBinding.edtRecolhedor,
-//                    ColorStateList.valueOf(ContextCompat.getColor(this, android.R.color.holo_red_dark))
-//            );
-//        } else {
-//            mainBinding.edtRecolhedor.setError(null);
-//            ViewCompat.setBackgroundTintList(mainBinding.edtRecolhedor, recolhedorTintNormal);
-//        }
-//    }
-
-    // ==========================================================
-    // AUTOCOMPLETE VENDEDOR (VALIDACAO + BLOQUEIO) - NOVO
-    // ==========================================================
     private void configurarAutocompleteVendedor() {
         vendedorTintNormal = ViewCompat.getBackgroundTintList(mainBinding.edtVendedor);
 
@@ -654,8 +840,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
         mainBinding.edtVendedor.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
                 mostrarDropDownVendedor();
-            } else {
-                //validarVendedor(true);
             }
         });
 
@@ -665,9 +849,7 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 selecionado = selecionado.trim();
                 mainBinding.edtVendedor.setText(selecionado);
                 mainBinding.edtVendedor.setSelection(selecionado.length());
-
                 aplicarErroVendedor(false);
-                //setBloqueioVendedor(false);
             }
         });
 
@@ -683,13 +865,11 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
                 if (vendedoresAll.isEmpty()) {
                     aplicarErroVendedor(false);
-                    //setBloqueioVendedor(false);
                     return;
                 }
 
                 if (txt.isEmpty()) {
                     aplicarErroVendedor(false);
-                    //setBloqueioVendedor(false);
                     mostrarDropDownVendedor();
                     return;
                 }
@@ -698,10 +878,8 @@ public class RecolhimentoActivity extends AppCompatActivity {
 
                 if (temSugestao) {
                     aplicarErroVendedor(false);
-                    //setBloqueioVendedor(false);
                 } else {
                     aplicarErroVendedor(true);
-                    //setBloqueioVendedor(true);
                 }
 
                 mostrarDropDownVendedor();
@@ -724,50 +902,10 @@ public class RecolhimentoActivity extends AppCompatActivity {
         });
     }
 
-//    private boolean validarVendedor(boolean exigirExato) {
-//        if (mainBinding.edtVendedor.getVisibility() != View.VISIBLE) {
-//            setBloqueioVendedor(false);
-//            return true;
-//        }
-//
-//        String txt = mainBinding.edtVendedor.getText().toString().trim();
-//
-//        if (vendedoresAll.isEmpty()) return true;
-//
-//        // vazio é permitido (sem filtro)
-//        if (txt.isEmpty()) {
-//            aplicarErroVendedor(false);
-//            setBloqueioVendedor(false);
-//            return true;
-//        }
-//
-//        boolean ok = exigirExato ? existeVendedor(txt) : temSugestaoVendedor(txt);
-//
-//        aplicarErroVendedor(!ok);
-//        setBloqueioVendedor(!ok);
-//
-//        if (!ok) {
-//            mainBinding.edtVendedor.requestFocus();
-//            mostrarDropDownVendedor();
-//        }
-//
-//        return ok;
-//    }
-
-    private boolean existeVendedor(String txt) {
-        String t = txt.trim().toLowerCase(Locale.getDefault());
-        for (String n : vendedoresAll) {
-            if (n != null && n.trim().toLowerCase(Locale.getDefault()).equals(t)) return true;
-        }
-        return false;
-    }
-
     private boolean temSugestaoVendedor(String txt) {
-        String t = txt.trim().toLowerCase(Locale.getDefault());
+        String t = normalize(txt);
         for (String n : vendedoresAll) {
-            if (n == null) continue;
-            String nn = n.trim().toLowerCase(Locale.getDefault());
-            if (nn.startsWith(t)) return true;
+            if (normalize(n).startsWith(t)) return true;
         }
         return false;
     }
@@ -785,9 +923,6 @@ public class RecolhimentoActivity extends AppCompatActivity {
         }
     }
 
-    // ==========================================================
-    // PDF (SEU CÓDIGO)
-    // ==========================================================
     private void gerarPdfRecolhimentos(List<RecolheuModel> recolhimentos) {
 
         if (recolhimentos == null || recolhimentos.isEmpty()) {
@@ -795,7 +930,8 @@ public class RecolhimentoActivity extends AppCompatActivity {
             return;
         }
 
-        final int PAGE_W = 595, PAGE_H = 842;
+        final int PAGE_W = 595;
+        final int PAGE_H = 842;
         final int MARGIN = 36;
         final int CONTENT_W = PAGE_W - (MARGIN * 2);
 
@@ -855,15 +991,16 @@ public class RecolhimentoActivity extends AppCompatActivity {
                 tipoDesc = "Tipo " + tipo;
             }
 
-            String vendedor = r.getVendedor() != null ? r.getVendedor() : "-";
-            String dataStr = r.getDataHoraAtual() != null ? r.getDataHoraAtual() : "-";
+            String vendedor = !isBlank(r.getVendedor()) ? r.getVendedor().trim() : "-";
+            String dataStr = !isBlank(r.getDataHoraAtual()) ? r.getDataHoraAtual().trim() : "-";
+            String recolhedor = !isBlank(r.getRecolhedor()) ? r.getRecolhedor().trim() : "-";
             String valorFmt = String.format(ptBr, "R$ %.2f", r.getValor());
-            String obs = r.getObservacoes();
+            String obs = !isBlank(r.getObservacoes()) ? r.getObservacoes().trim() : null;
 
             int cardPadding = 16;
             int lineHeight = (int) (value.getTextSize() + 10);
-            int linhasBase = 4;
-            int linhasObs = (obs != null && !obs.trim().isEmpty()) ? 1 : 0;
+            int linhasBase = 5;
+            int linhasObs = (obs != null) ? 1 : 0;
             int headerH = (int) (label.getTextSize() + 22);
             int cardH = cardPadding * 2 + headerH + ((linhasBase + linhasObs) * lineHeight);
 
@@ -899,18 +1036,35 @@ public class RecolhimentoActivity extends AppCompatActivity {
             canvas.drawText("Vendedor: " + vendedor, cx, cy, value);
             cy += lineHeight;
 
+            canvas.drawText("Recolhedor: " + recolhedor, cx, cy, value);
+            cy += lineHeight;
+
             canvas.drawText("Valor: " + valorFmt, cx, cy, value);
             cy += lineHeight;
 
             canvas.drawText("Data: " + dataStr, cx, cy, value);
             cy += lineHeight;
 
-            if (obs != null && !obs.trim().isEmpty()) {
-                canvas.drawText("Observações: " + obs.trim(), cx, cy, value);
+            if (obs != null) {
+                canvas.drawText("Observações: " + obs, cx, cy, value);
                 cy += lineHeight;
             }
 
             y = (int) (bottom + 20);
+        }
+
+        int resumoAltura = 70;
+        if (y + resumoAltura > PAGE_H - MARGIN) {
+            drawFooterRecolhimentos(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
+            doc.finishPage(page);
+
+            pageNum++;
+            page = doc.startPage(
+                    new PdfDocument.PageInfo.Builder(PAGE_W, PAGE_H, pageNum).create()
+            );
+            canvas = page.getCanvas();
+            y = MARGIN;
+            y = drawHeaderRecolhimentos(canvas, title, sub, divider, CONTENT_W, MARGIN, y);
         }
 
         String resumo1 = "Total Recolhido: " + String.format(ptBr, "R$ %.2f", totalRecolhido);
@@ -918,10 +1072,9 @@ public class RecolhimentoActivity extends AppCompatActivity {
         String resumo3 = "Saldo (Recolhido - Pago): " +
                 String.format(ptBr, "R$ %.2f", (totalRecolhido - totalPago));
 
-        int resumoY = PAGE_H - 70;
-        canvas.drawText(resumo1, MARGIN, resumoY, label);
-        canvas.drawText(resumo2, MARGIN, resumoY + 18, label);
-        canvas.drawText(resumo3, MARGIN, resumoY + 36, label);
+        canvas.drawText(resumo1, MARGIN, y + 15, label);
+        canvas.drawText(resumo2, MARGIN, y + 33, label);
+        canvas.drawText(resumo3, MARGIN, y + 51, label);
 
         drawFooterRecolhimentos(canvas, small, MARGIN, PAGE_W, PAGE_H, pageNum);
         doc.finishPage(page);
@@ -950,16 +1103,51 @@ public class RecolhimentoActivity extends AppCompatActivity {
                                         int contentW,
                                         int margin,
                                         int y) {
+
+        Locale ptBr = new Locale("pt", "BR");
+
+        String vendedorRelatorio = !isBlank(filtroAtualVendedor) ? filtroAtualVendedor : "Todos";
+        String recolhedorRelatorio;
+
+        if (!isBlank(filtroAtualRecolhedor)) {
+            recolhedorRelatorio = filtroAtualRecolhedor;
+        } else if (isModoRecolhedor() && !isBlank(nomeRecolhedor)) {
+            recolhedorRelatorio = nomeRecolhedor;
+        } else {
+            recolhedorRelatorio = "Todos";
+        }
+
+        String periodoRelatorio;
+        if (!isBlank(filtroAtualDataInicio) && !isBlank(filtroAtualDataFim)) {
+            periodoRelatorio = filtroAtualDataInicio + " até " + filtroAtualDataFim;
+        } else if (!isBlank(filtroAtualDataInicio)) {
+            periodoRelatorio = "A partir de " + filtroAtualDataInicio;
+        } else if (!isBlank(filtroAtualDataFim)) {
+            periodoRelatorio = "Até " + filtroAtualDataFim;
+        } else {
+            periodoRelatorio = "Todos";
+        }
+
+        String dataGeracao = new SimpleDateFormat("dd/MM/yyyy HH:mm", ptBr).format(new Date());
+
         canvas.drawText("Relatório de Recolhimentos", margin, y + title.getTextSize(), title);
         y += (int) (title.getTextSize() + 6);
 
-        String data = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR"))
-                .format(new Date());
-        canvas.drawText("Gerado em " + data, margin, y + sub.getTextSize(), sub);
+        canvas.drawText("Gerado em " + dataGeracao, margin, y + sub.getTextSize(), sub);
+        y += (int) (sub.getTextSize() + 6);
+
+        canvas.drawText("Vendedor: " + vendedorRelatorio, margin, y + sub.getTextSize(), sub);
+        y += (int) (sub.getTextSize() + 6);
+
+        canvas.drawText("Recolhedor: " + recolhedorRelatorio, margin, y + sub.getTextSize(), sub);
+        y += (int) (sub.getTextSize() + 6);
+
+        canvas.drawText("Período: " + periodoRelatorio, margin, y + sub.getTextSize(), sub);
         y += (int) (sub.getTextSize() + 8);
 
         canvas.drawLine(margin, y, margin + contentW, y, divider);
         y += 12;
+
         return y;
     }
 
@@ -969,8 +1157,7 @@ public class RecolhimentoActivity extends AppCompatActivity {
                                          int pageW,
                                          int pageH,
                                          int pageNum) {
-        String left = "© " + java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
-                + " • Sistema de Recolhimentos";
+        String left = "© " + Calendar.getInstance().get(Calendar.YEAR) + " • Sistema de Recolhimentos";
         String right = "Página " + pageNum;
 
         canvas.drawText(left, margin, pageH - 14, small);
@@ -991,20 +1178,27 @@ public class RecolhimentoActivity extends AppCompatActivity {
             shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
             shareIntent.putExtra(Intent.EXTRA_TEXT, "Segue o relatório em PDF 📄");
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
             shareIntent.setPackage("com.whatsapp");
             startActivity(shareIntent);
-        } catch (Exception e) {
-            Intent genericShare = new Intent(Intent.ACTION_SEND);
-            genericShare.setType("application/pdf");
-            genericShare.putExtra(
-                    Intent.EXTRA_STREAM,
-                    FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", pdfFile)
-            );
-            genericShare.putExtra(Intent.EXTRA_TEXT, "Segue o relatório em PDF 📄");
-            genericShare.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            startActivity(Intent.createChooser(genericShare, "Compartilhar PDF"));
+        } catch (Exception e) {
+            try {
+                Uri uri = FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".fileprovider",
+                        pdfFile
+                );
+
+                Intent genericShare = new Intent(Intent.ACTION_SEND);
+                genericShare.setType("application/pdf");
+                genericShare.putExtra(Intent.EXTRA_STREAM, uri);
+                genericShare.putExtra(Intent.EXTRA_TEXT, "Segue o relatório em PDF 📄");
+                genericShare.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                startActivity(Intent.createChooser(genericShare, "Compartilhar PDF"));
+            } catch (Exception ex) {
+                Toast.makeText(this, "Erro ao compartilhar PDF.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

@@ -19,6 +19,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.UUID;
+
 import benicio.solucoes.rifacampeo.databinding.ActivityMenuAcvityBinding;
 import benicio.solucoes.rifacampeo.objects.ResponseSimple;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
@@ -93,6 +95,21 @@ public class MenuAcvity extends AppCompatActivity {
             }
         });
 
+        gerarOuMostrarStringUnica();
+
+    }
+
+
+    private void gerarOuMostrarStringUnica() {
+        String valorSalvo = prefs.getString("string_unica_app", null);
+
+        if (valorSalvo == null || valorSalvo.isEmpty()) {
+            String novaString = UUID.randomUUID().toString().replace("-", "");
+            prefs.edit().putString("string_unica_app", novaString).apply();
+            mainBinding.identificador.setText("Identificador do Aparelho\n" + novaString );
+        } else {
+            mainBinding.identificador.setText("Identificador do Aparelho\n" + valorSalvo );
+        }
     }
 
     public String getDeviceUniqueId() {
@@ -129,7 +146,9 @@ public class MenuAcvity extends AppCompatActivity {
         } else {
             VendedorModel vendedorModel = new VendedorModel();
             vendedorModel.setSenha(code);
-            vendedorModel.setSerial(getDeviceUniqueId());
+            vendedorModel.setSerial(prefs.getString("string_unica_app", null));
+
+            Log.d("mayarinha", "checkCode: " + prefs.getString("string_unica_app", null));
 
             RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
                 @Override

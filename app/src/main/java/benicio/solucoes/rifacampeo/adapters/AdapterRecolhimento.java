@@ -63,21 +63,16 @@ public class AdapterRecolhimento extends RecyclerView.Adapter<AdapterRecolhiment
 
     private void compartilharRecolhimento(RecolheuModel item) {
         String mensagem = montarMensagemWhatsApp(item);
-
-        // monta link universal do WhatsApp
         String url = "https://wa.me/?text=" + Uri.encode(mensagem);
 
-        // 1) tenta abrir no WhatsApp Business
         if (abrirLinkNoWhatsApp(url, "com.whatsapp.w4b")) {
             return;
         }
 
-        // 2) tenta abrir no WhatsApp normal
         if (abrirLinkNoWhatsApp(url, "com.whatsapp")) {
             return;
         }
 
-        // 3) fallback: abre navegador / chooser
         abrirLinkExterno(url);
     }
 

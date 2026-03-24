@@ -1,27 +1,18 @@
 package benicio.solucoes.rifacampeo.objects;
 
-import android.widget.ArrayAdapter;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class RecolheuModel {
-
-
-
 
     private String dataHoraAtual;
     private String vendedor;
     private float valor;
     private String observacoes;
     private int tipo;
-
     private String recolhedor = "";
 
-    // Construtor padrão: já seta a data/hora atual
     public RecolheuModel() {
         this.dataHoraAtual = getDataHoraAgora();
     }
@@ -40,17 +31,16 @@ public class RecolheuModel {
         String valorFmt = String.format(ptBr, "R$ %.2f", valor);
 
         String tipoDesc = esc(getTipoDescricao());
-        String RecolhedorDesc = esc(getRecolhedor());
+        String recolhedorDesc = esc(getRecolhedor());
         String vendedorStr = esc(vendedor != null ? vendedor : "-");
         String dataStr = esc(dataHoraAtual != null ? dataHoraAtual : "-");
 
         StringBuilder sb = new StringBuilder();
-
         sb.append("<b>Tipo:</b> ").append(tipoDesc).append("<br>");
         sb.append("<b>Vendedor:</b> ").append(vendedorStr).append("<br>");
         sb.append("<b>Valor:</b> ").append(valorFmt).append("<br>");
         sb.append("<b>Data:</b> ").append(dataStr).append("<br>");
-        sb.append("<b>Recolhedor:</b> ").append(RecolhedorDesc).append("<br>");
+        sb.append("<b>Recolhedor:</b> ").append(recolhedorDesc).append("<br>");
 
         if (observacoes != null && !observacoes.trim().isEmpty()) {
             sb.append("<b>Observações:</b> ")
@@ -61,23 +51,19 @@ public class RecolheuModel {
         return sb.toString();
     }
 
-
-    public String getRecolhedor() {
-        return recolhedor;
-    }
-
-    public void setRecolhedor(String recolhedor) {
-        this.recolhedor = recolhedor;
-    }
-
-    private String getTipoDescricao() {
+    public String getTipoDescricao() {
         switch (tipo) {
-            case 0: return "Recolhimento";
-            case 1: return "Pagamento";
-            default: return "Tipo " + tipo;
+            case 0:
+                return "Recolhimento";
+            case 1:
+                return "Pagamento";
+            default:
+                return "Tipo " + tipo;
         }
     }
+
     private String esc(String s) {
+        if (s == null) return "";
         return s.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;");
@@ -90,14 +76,6 @@ public class RecolheuModel {
 
     public String getDataHoraAtual() {
         return dataHoraAtual;
-    }
-
-    public int getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(int tipo) {
-        this.tipo = tipo;
     }
 
     public void setDataHoraAtual(String dataHoraAtual) {
@@ -126,5 +104,21 @@ public class RecolheuModel {
 
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
+    }
+
+    public int getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(int tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getRecolhedor() {
+        return recolhedor;
+    }
+
+    public void setRecolhedor(String recolhedor) {
+        this.recolhedor = recolhedor;
     }
 }
