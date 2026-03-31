@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
@@ -24,12 +26,16 @@ import java.util.UUID;
 import benicio.solucoes.rifacampeo.databinding.ActivityMenuAcvityBinding;
 import benicio.solucoes.rifacampeo.objects.ResponseSimple;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
+import benicio.solucoes.rifacampeo.objects.VersionModel;
 import benicio.solucoes.rifacampeo.utils.RetrofitUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MenuAcvity extends AppCompatActivity {
+
+    private AlertDialog loadingDialog;
+    private AlertDialog updateDialog;
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
     EditText et1, et2, et3, et4, et5, et6;
@@ -44,6 +50,8 @@ public class MenuAcvity extends AppCompatActivity {
         mainBinding = ActivityMenuAcvityBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        verificarVersion();
 
         prefs = getSharedPreferences("rprefs", MODE_PRIVATE);
         edt = prefs.edit();
@@ -98,6 +106,59 @@ public class MenuAcvity extends AppCompatActivity {
         gerarOuMostrarStringUnica();
 
     }
+
+    private void verificarVersion() {
+        // dialog de carregamento
+        AlertDialog.Builder loadingBuilder = new AlertDialog.Builder(this);
+        loadingBuilder.setView(getLayoutInflater().inflate(R.layout.dialog_loading, null));
+        loadingBuilder.setCancelable(false);
+
+        loadingDialog = loadingBuilder.create();
+        loadingDialog.setCanceledOnTouchOutside(false);
+        loadingDialog.show();
+
+        RetrofitUtils.getApiService().getVersion().enqueue(new Callback<VersionModel>() {
+            @Override
+            public void onResponse(Call<VersionModel> call, Response<VersionModel> response) {
+                if (loadingDialog != null && loadingDialog.isShowing()) {
+                    loadingDialog.dismiss();
+                }
+
+                if (!response.isSuccessful() || response.body() == null || response.body().getVersion() == null) {
+                    return;
+                }
+
+                String versaoAtual = "V" + response.body().getVersion().trim();
+                String versaoApp = getString(R.string.app_version).trim();
+
+                Log.d("mayara", "versaoAtual: " + versaoAtual + " versaoApp: " + versaoApp);
+
+                if (!versaoAtual.equals(versaoApp)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MenuAcvity.this);
+                    builder.setTitle("Atualização disponível");
+                    builder.setMessage("Existe uma nova versão do aplicativo. Você precisa atualizar para continuar usando.");
+                    builder.setCancelable(false);
+                    builder.setPositiveButton("Atualizar", (dialog, which) -> {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("https://rifa.benicio-solucoes.com/"));
+                        startActivity(intent);
+                    });
+
+                    updateDialog = builder.create();
+                    updateDialog.setCanceledOnTouchOutside(false);
+                    updateDialog.show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VersionModel> call, Throwable throwable) {
+                if (loadingDialog != null && loadingDialog.isShowing()) {
+                    loadingDialog.dismiss();
+                }
+            }
+        });
+    }
+
 
 
     private void gerarOuMostrarStringUnica() {
@@ -219,42 +280,38 @@ public class MenuAcvity extends AppCompatActivity {
         new androidx.appcompat.app.AlertDialog.Builder(this).setTitle("Confirmação de Admin").setMessage("Informe a segunda senha para continuar").setView(input).setCancelable(false).setPositiveButton("Entrar", null) // vou sobrescrever depois pra não fechar sozinho
                 .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss()).create();
 
-        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this).setTitle("Confirmação de Admin").setMessage("Informe a segunda senha para continuar").setView(input).setCancelable(false).setPositiveButton("Entrar", null).setNegativeButton("Cancelar", (d, w) -> d.dismiss()).create();
+        androidx.appcompat.app.AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Confirmação de Admin").setMessage("Informe a segunda senha para continuar").setView(input).setCancelable(false).setPositiveButton("Entrar", (d , i) -> {
+            String senha = input.getText().toString().trim();
 
-        dialog.setOnShowListener(d -> {
-            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                String senha = input.getText().toString().trim();
-
-                dialog.dismiss();
-
-                if (senhaBater.equals("@4267#")) {
-                    startActivity(new Intent(this, AdminMasterActivity.class));
-                } else {
-                    VendedorModel vendedorModel = new VendedorModel();
-                    vendedorModel.setSenha(senha);
+            if (senha.equals(senhaBater)) {
+                Log.d("myara", "pedirSegundaSenha: " + senhaBater);
+                startActivity(new Intent(this, AdminMasterActivity.class));
+            } else {
+                VendedorModel vendedorModel = new VendedorModel();
+                vendedorModel.setSenha(senha);
 //                        vendedorModel.setSerial(getDeviceUniqueId());
 
-                    RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
-                        @Override
-                        public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response) {
-                            if (response.isSuccessful()) {
-                                if (response.body().isSuccess()) {
-                                    Intent i = new Intent(MenuAcvity.this, RecolhimentoActivity.class);
-                                    edt.putString("recolhedor", response.body().getVendedor().getNome()).apply();
-                                    i.putExtra("recolhedor", true);
-                                    startActivity(i);
-                                }
+                RetrofitUtils.getApiService().login(vendedorModel).enqueue(new Callback<ResponseSimple>() {
+                    @Override
+                    public void onResponse(Call<ResponseSimple> call, Response<ResponseSimple> response) {
+                        if (response.isSuccessful()) {
+                            if (response.body().isSuccess()) {
+                                Intent i = new Intent(MenuAcvity.this, RecolhimentoActivity.class);
+                                edt.putString("recolhedor", response.body().getVendedor().getNome()).apply();
+                                i.putExtra("recolhedor", true);
+                                startActivity(i);
                             }
                         }
+                    }
 
-                        @Override
-                        public void onFailure(Call<ResponseSimple> call, Throwable throwable) {
+                    @Override
+                    public void onFailure(Call<ResponseSimple> call, Throwable throwable) {
 
-                        }
-                    });
-                }
-            });
-        });
+                    }
+                });
+            }
+        }).setNegativeButton("Cancelar", (d, w) -> d.dismiss()).create();
+
 
         dialog.show();
     }

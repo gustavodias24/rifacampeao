@@ -10,8 +10,11 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -34,8 +37,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import benicio.solucoes.rifacampeo.adapters.AdapterBilhetes;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
@@ -49,7 +54,8 @@ import retrofit2.Response;
 public class RelatoriosActivity extends AppCompatActivity {
 
     // Filtros
-    private Spinner spNomeVendedor, spDocumentoVendedor, spLoteria;
+    private AutoCompleteTextView spNomeVendedor, spDocumentoVendedor;
+    private Spinner spLoteria;
     private EditText edtDataInicio, edtDataFim, edtIdBilhete;
 
     // Lista
@@ -70,6 +76,8 @@ public class RelatoriosActivity extends AppCompatActivity {
     private ArrayAdapter<String> adapterNomes;
     private ArrayAdapter<String> adapterDocumentos;
 
+    private boolean alterandoCampoAutomaticamente = false;
+
     private final SimpleDateFormat sdfData = new SimpleDateFormat("dd/MM/yyyy", new Locale("pt", "BR"));
 
     @Override
@@ -83,16 +91,16 @@ public class RelatoriosActivity extends AppCompatActivity {
         bindViews();
         setupRecycler();
         setupPickers();
-
-        setupSpinnerBase();
+        setupAutocompleteBase();
         setupSpinnerLoteria();
+        configurarAutocompleteRecolhe();
         carregarVendedores();
 
         btnBuscar.setOnClickListener(v -> carregarBilhetes());
 
         btnGerarPdf.setOnClickListener(v -> {
-            aplicarFiltros(); // garante que o filtro atual seja aplicado
-            gerarPdf(new ArrayList<>(bilhetesFiltrados)); // envia uma cópia já filtrada
+            aplicarFiltros();
+            gerarPdf(new ArrayList<>(bilhetesFiltrados));
         });
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -157,20 +165,77 @@ public class RelatoriosActivity extends AppCompatActivity {
         });
     }
 
-    private void setupSpinnerBase() {
+    private void setupAutocompleteBase() {
         nomes.clear();
         documentos.clear();
 
-        nomes.add("Todos");
-        documentos.add("Todos");
-
-        adapterNomes = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, nomes);
-        adapterNomes.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterNomes = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                nomes
+        );
         spNomeVendedor.setAdapter(adapterNomes);
+        spNomeVendedor.setThreshold(2);
 
-        adapterDocumentos = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, documentos);
-        adapterDocumentos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterDocumentos = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                documentos
+        );
         spDocumentoVendedor.setAdapter(adapterDocumentos);
+        spDocumentoVendedor.setThreshold(2);
+    }
+
+    private void configurarAutocompleteRecolhe() {
+        spNomeVendedor.setOnItemClickListener((parent, view, position, id) -> {
+            if (alterandoCampoAutomaticamente) return;
+
+            String nomeSelecionado = parent.getItemAtPosition(position).toString();
+            VendedorModel vendedor = buscarPorNome(nomeSelecionado);
+
+            if (vendedor != null && !safe(vendedor.getDocumento()).trim().isEmpty()) {
+                alterandoCampoAutomaticamente = true;
+                spDocumentoVendedor.setText(safe(vendedor.getDocumento()).trim(), false);
+                alterandoCampoAutomaticamente = false;
+            }
+        });
+
+        spDocumentoVendedor.setOnItemClickListener((parent, view, position, id) -> {
+            if (alterandoCampoAutomaticamente) return;
+
+            String docSelecionado = parent.getItemAtPosition(position).toString();
+            VendedorModel vendedor = buscarPorDocumento(docSelecionado);
+
+            if (vendedor != null && !safe(vendedor.getNome()).trim().isEmpty()) {
+                alterandoCampoAutomaticamente = true;
+                spNomeVendedor.setText(safe(vendedor.getNome()).trim(), false);
+                alterandoCampoAutomaticamente = false;
+            }
+        });
+
+        spNomeVendedor.addTextChangedListener(criarTextWatcherDropdown(spNomeVendedor));
+        spDocumentoVendedor.addTextChangedListener(criarTextWatcherDropdown(spDocumentoVendedor));
+    }
+
+    private TextWatcher criarTextWatcherDropdown(AutoCompleteTextView autoCompleteTextView) {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (alterandoCampoAutomaticamente) return;
+
+                if (s != null && s.length() >= 2) {
+                    autoCompleteTextView.post(autoCompleteTextView::showDropDown);
+                } else {
+                    autoCompleteTextView.dismissDropDown();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        };
     }
 
     private void setupSpinnerLoteria() {
@@ -195,20 +260,35 @@ public class RelatoriosActivity extends AppCompatActivity {
 
                             nomes.clear();
                             documentos.clear();
-                            nomes.add("Todos");
-                            documentos.add("Todos");
+
+                            Set<String> nomesNormalizados = new HashSet<>();
+                            Set<String> docsNormalizados = new HashSet<>();
 
                             for (VendedorModel v : vendedores) {
-                                if (!safe(v.getNome()).trim().isEmpty()) {
-                                    nomes.add(safe(v.getNome()).trim());
+                                String nome = safe(v.getNome()).trim();
+                                String documento = safe(v.getDocumento()).trim();
+
+                                if (!nome.isEmpty()) {
+                                    String chaveNome = normalize(nome);
+                                    if (!nomesNormalizados.contains(chaveNome)) {
+                                        nomesNormalizados.add(chaveNome);
+                                        nomes.add(nome);
+                                    }
                                 }
 
-                                if (!safe(v.getDocumento()).trim().isEmpty()) {
-                                    documentos.add(safe(v.getDocumento()).trim());
+                                if (!documento.isEmpty()) {
+                                    String chaveDoc = normalize(documento);
+                                    if (!docsNormalizados.contains(chaveDoc)) {
+                                        docsNormalizados.add(chaveDoc);
+                                        documentos.add(documento);
+                                    }
                                 }
 
-                                Log.d("RelatoriosActivity", "Recolhedor: " + v.getDocumento());
+                                Log.d("RelatoriosActivity", "Recolhedor: " + documento);
                             }
+
+                            Collections.sort(nomes, String.CASE_INSENSITIVE_ORDER);
+                            Collections.sort(documentos, String.CASE_INSENSITIVE_ORDER);
 
                             adapterNomes.notifyDataSetChanged();
                             adapterDocumentos.notifyDataSetChanged();
@@ -222,6 +302,26 @@ public class RelatoriosActivity extends AppCompatActivity {
                         Toast.makeText(RelatoriosActivity.this, "Falha na API de vendedores", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private VendedorModel buscarPorNome(String nome) {
+        String nomeNormalizado = normalize(nome);
+        for (VendedorModel vendedor : vendedores) {
+            if (normalize(safe(vendedor.getNome()).trim()).equals(nomeNormalizado)) {
+                return vendedor;
+            }
+        }
+        return null;
+    }
+
+    private VendedorModel buscarPorDocumento(String documento) {
+        String docNormalizado = normalize(documento);
+        for (VendedorModel vendedor : vendedores) {
+            if (normalize(safe(vendedor.getDocumento()).trim()).equals(docNormalizado)) {
+                return vendedor;
+            }
+        }
+        return null;
     }
 
     private void carregarBilhetes() {
@@ -251,11 +351,11 @@ public class RelatoriosActivity extends AppCompatActivity {
     }
 
     private void aplicarFiltros() {
-        String nomeSel = spNomeVendedor.getSelectedItem() == null
-                ? "" : spNomeVendedor.getSelectedItem().toString().trim();
+        String nomeSel = spNomeVendedor.getText() == null
+                ? "" : spNomeVendedor.getText().toString().trim();
 
-        String docSel = spDocumentoVendedor.getSelectedItem() == null
-                ? "" : spDocumentoVendedor.getSelectedItem().toString().trim();
+        String docSel = spDocumentoVendedor.getText() == null
+                ? "" : spDocumentoVendedor.getText().toString().trim();
 
         String lotSel = spLoteria.getSelectedItem() == null
                 ? "" : spLoteria.getSelectedItem().toString().trim();
@@ -344,7 +444,9 @@ public class RelatoriosActivity extends AppCompatActivity {
 
     private String normalize(String s) {
         String n = Normalizer.normalize(s == null ? "" : s, Normalizer.Form.NFD);
-        return n.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase(Locale.ROOT).trim();
+        return n.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .toLowerCase(Locale.ROOT)
+                .trim();
     }
 
     private String formatDate(String raw) {
@@ -606,10 +708,8 @@ public class RelatoriosActivity extends AppCompatActivity {
     ) {
         List<String> linhas = new ArrayList<>();
 
-        String id = safe(b.get_id());
         String data = safe(b.getData());
         String hora = safe(b.getHora());
-        String usuario = safe(b.getId_usuario());
         String docVend = safe(b.getDocumento_vendedor());
         String nomeVend = safe(b.getNome_vendedor());
         String numeroBilhete = safe(b.getNumero());
@@ -619,18 +719,27 @@ public class RelatoriosActivity extends AppCompatActivity {
                 ? new ArrayList<>()
                 : new ArrayList<>(b.getNumeros());
         Collections.sort(nums);
-        String numsStr = nums.isEmpty() ? "-" : joinInts(nums, " ");
+
+        List<String> numsFormatados = new ArrayList<>();
+        for (Integer num : nums) {
+            if (num == null) continue;
+
+            String numeroStr = String.format("%04d", num);
+            numsFormatados.add(numeroStr);
+        }
+
+        String numsStr = numsFormatados.isEmpty() ? "-" : joinStrings(numsFormatados, " ");
+
+        Log.d("mayara", "buildBilheteLines: " + b.getNumeros());
 
         int qtd = nums.size();
         String valorTotal = money.format(qtd * valorUnitario);
         String valorUnit = money.format(valorUnitario);
 
-        linhas.add("ID: " + id);
         linhas.add("Data: " + data + "    Hora: " + hora);
         linhas.add("Loteria: " + loteria + "    Nº Bilhete: " + numeroBilhete);
         linhas.add("Vendedor: " + nomeVend);
         linhas.add("Recolhe: " + docVend);
-        linhas.add("ID do usuário: " + usuario);
         linhas.add("Números (" + qtd + "): " + numsStr);
         linhas.add("Valor unitário: " + valorUnit + "    Valor total: " + valorTotal);
 
@@ -767,10 +876,8 @@ public class RelatoriosActivity extends AppCompatActivity {
     private String resumoFiltrosAplicados() {
         List<String> parts = new ArrayList<>();
 
-        String nomeSel = (spNomeVendedor.getSelectedItem() == null)
-                ? "" : spNomeVendedor.getSelectedItem().toString().trim();
-        String docSel = (spDocumentoVendedor.getSelectedItem() == null)
-                ? "" : spDocumentoVendedor.getSelectedItem().toString().trim();
+        String nomeSel = safe(spNomeVendedor.getText().toString().trim());
+        String docSel = safe(spDocumentoVendedor.getText().toString().trim());
         String lotSel = (spLoteria.getSelectedItem() == null)
                 ? "" : spLoteria.getSelectedItem().toString().trim();
 

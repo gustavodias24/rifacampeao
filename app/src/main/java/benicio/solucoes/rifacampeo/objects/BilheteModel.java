@@ -37,7 +37,7 @@ public class BilheteModel {
             List<Integer> sorted = new ArrayList<>(numeros);
             java.util.Collections.sort(sorted);
             for (int i = 0; i < sorted.size(); i++) {
-                numerosEscolhidos.append(sorted.get(i));
+                numerosEscolhidos.append(String.format("%04d", sorted.get(i)));
                 if (i < sorted.size() - 1) numerosEscolhidos.append(" ");
             }
             qtd = sorted.size();

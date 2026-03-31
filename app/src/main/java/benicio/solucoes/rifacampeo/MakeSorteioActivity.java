@@ -1,13 +1,18 @@
 package benicio.solucoes.rifacampeo;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -29,12 +34,15 @@ import benicio.solucoes.rifacampeo.databinding.ActivityMakeSorteioBinding;
 import benicio.solucoes.rifacampeo.objects.BilheteModel;
 import benicio.solucoes.rifacampeo.objects.DateLimitModel;
 import benicio.solucoes.rifacampeo.objects.SaveBilheteResponse;
+import benicio.solucoes.rifacampeo.objects.VersionModel;
 import benicio.solucoes.rifacampeo.utils.RetrofitUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MakeSorteioActivity extends AppCompatActivity {
+
+
 
     public static int valorDoBilhete = 0;
     private boolean inFlight = false;
@@ -57,6 +65,8 @@ public class MakeSorteioActivity extends AppCompatActivity {
         makeSorteioBinding = ActivityMakeSorteioBinding.inflate(getLayoutInflater());
         setContentView(makeSorteioBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+
 
         AlertDialog.Builder bDialog = new AlertDialog.Builder(this);
         bDialog.setTitle("Carregando...");
@@ -225,6 +235,9 @@ public class MakeSorteioActivity extends AppCompatActivity {
         });
     }
 
+
+
+
     public void showMessage(String msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("AVISO");
@@ -291,6 +304,7 @@ public class MakeSorteioActivity extends AppCompatActivity {
                                 if (!numeros.contains(code)) {
                                     numeros.add(code);
                                     adapterNumero.notifyDataSetChanged();
+                                    fecharQualquerTeclado(MakeSorteioActivity.this);
                                     atualizarPrecoBilhete(1);
                                 } else {
                                     showMessage("Você já inseriu esse número!");
@@ -309,6 +323,26 @@ public class MakeSorteioActivity extends AppCompatActivity {
                         inFlight = false;
                     }
                 });
+    }
+
+    public static void fecharQualquerTeclado(Activity activity) {
+        if (activity == null) return;
+
+        InputMethodManager imm =
+                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        View view = activity.getCurrentFocus();
+        if (view == null) {
+            view = activity.getWindow().getDecorView();
+        }
+
+        if (imm != null && view != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+        if (view != null) {
+            view.clearFocus();
+        }
     }
 
     public static void atualizarPrecoBilhete(int addOrRemove) {

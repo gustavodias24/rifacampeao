@@ -96,8 +96,8 @@ public class PrinterTicketUtils {
         out.write(EscPosBase.alignLeft());
 
         out.write(("Nome: " + d.nome + "\n").getBytes());
-        out.write(("Documento: " + d.documento + "\n").getBytes());
-        out.write(("Numero: " + d.numero + "\n").getBytes());
+        //out.write(("Documento: " + d.documento + "\n").getBytes());
+        //out.write(("Numero: " + d.numero + "\n").getBytes());
         out.write(("Data: " + d.data + "\n").getBytes());
         out.write(("Hora: " + d.hora + "\n").getBytes());
         out.write(("Loteria: " + d.loteria + "\n").getBytes());
@@ -108,9 +108,15 @@ public class PrinterTicketUtils {
         out.write(EscPosBase.alignCenter());
         out.write("NUMEROS\n\n".getBytes());
 
+        // aumenta o tamanho da fonte
+        out.write(new byte[]{0x1D, 0x21, 0x11}); // largura 2x e altura 2x
+
         for (String bilhete : d.bilhetes) {
             out.write((bilhete + "\n").getBytes());
         }
+
+        // volta ao tamanho normal
+        out.write(new byte[]{0x1D, 0x21, 0x00});
 
         out.write("\n".getBytes());
 

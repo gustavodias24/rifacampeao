@@ -160,7 +160,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
                                             Log.d("buceta", "valorTotalGeradoDF: " + valorTotalGeradoDF + " valorTotalGeradoCOR: " + valorTotalGeradoCOR + " valorRecolhidoVendedor: " + valorRecolhidoVendedor);
                                             // Monta os textos
                                             tvValorCoruja.setText(
-                                                    //"SALDO DE APOSTAS CORUJA: R$ " + nf.format(valorTotalGeradoCORLoteriaAtual) +
+                                                    "SALDO DE APOSTAS CORUJA: R$ " + nf.format(valorTotalGeradoCORLoteriaAtual) +
                                                             "\nSALDO DE APOSTAS FEDERAL: R$ " + nf.format(valorTotalGeradoDFLoteriaAtual) +
                                                     "\nTOTAL DE APOSTAS: R$ " + nf.format((valorTotalGeradoCORLoteriaAtual+valorTotalGeradoDFLoteriaAtual)));
 //                                            if ( saldoVendedor < 0){

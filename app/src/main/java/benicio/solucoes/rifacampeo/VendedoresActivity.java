@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -311,7 +312,8 @@ public class VendedoresActivity extends AppCompatActivity {
 
         for (VendedorModel vendedor : vendedoresFiltrados) {
             String nome = !isBlank(vendedor.getNome()) ? vendedor.getNome().trim() : "-";
-            String Recolhedor = !isBlank(vendedor.getDocumento()) ? vendedor.getNome().trim() : "-";
+            String Recolhedor = vendedor.getDocumento();//!isBlank(vendedor.getDocumento()) ? vendedor.getNome().trim() : "-";
+            Log.d("mayara", "gerarPdfVendedores: " + Recolhedor);
             float saldoAtual = vendedor.getSaldoAtual(recolhimentos != null ? recolhimentos : new ArrayList<>());
             String saldoFmt = String.format(ptBr, "R$ %.2f", saldoAtual);
 

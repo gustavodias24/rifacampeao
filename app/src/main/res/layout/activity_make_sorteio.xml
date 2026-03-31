@@ -1,166 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:background="@color/marrom"
+    tools:context=".MakeSorteioActivity">
 
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="wrap_content"
+        android:layout_height="120dp"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/logo" />
 
+    <ImageView
+        android:id="@+id/imageView7"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageView6"
+        app:srcCompat="@drawable/zerar_btn" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageView6"
+        app:srcCompat="@drawable/roleta" />
 
-        android:id="@+id/main"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/marrom"
-        tools:context=".MakeSorteioActivity">
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageView8">
 
-        <ImageView
-            android:id="@+id/imageView9"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/mockup"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-
-        <ImageView
-            android:id="@+id/imageView6"
-            android:layout_width="wrap_content"
-            android:layout_height="120dp"
-            android:layout_marginTop="64dp"
-            android:scaleType="fitXY"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/logo" />
-
-        <ImageView
-            android:id="@+id/imageView7"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
-            app:srcCompat="@drawable/zerar_btn" />
-
-        <ImageView
-            android:id="@+id/imageView8"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView6"
-            app:srcCompat="@drawable/roleta" />
-
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+        <EditText
+            android:id="@+id/et11"
+            android:layout_width="56dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/input_underline"
+            android:cursorVisible="false"
             android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView8">
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textColor="#111111"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/et11"
-                android:layout_width="56dp"
-                android:layout_height="64dp"
-                android:layout_margin="8dp"
-                android:background="@drawable/input_underline"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:cursorVisible="false"
-                android:textColor="#111111"
-                android:importantForAutofill="no" />
+        <EditText
+            android:id="@+id/et22"
+            android:layout_width="56dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/input_underline"
+            android:cursorVisible="false"
+            android:gravity="center"
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textColor="#111111"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/et22"
-                android:layout_width="56dp"
-                android:layout_height="64dp"
-                android:layout_margin="8dp"
-                android:background="@drawable/input_underline"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:cursorVisible="false"
-                android:textColor="#111111"
-                android:importantForAutofill="no" />
+        <EditText
+            android:id="@+id/et33"
+            android:layout_width="56dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/input_underline"
+            android:cursorVisible="false"
+            android:gravity="center"
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textColor="#111111"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/et33"
-                android:layout_width="56dp"
-                android:layout_height="64dp"
-                android:layout_margin="8dp"
-                android:background="@drawable/input_underline"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:cursorVisible="false"
-                android:textColor="#111111"
-                android:importantForAutofill="no" />
+        <EditText
+            android:id="@+id/et44"
+            android:layout_width="56dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/input_underline"
+            android:cursorVisible="false"
+            android:gravity="center"
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:maxLength="1"
+            android:textColor="#111111"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-            <EditText
-                android:id="@+id/et44"
-                android:layout_width="56dp"
-                android:layout_height="64dp"
-                android:layout_margin="8dp"
-                android:background="@drawable/input_underline"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="1"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:cursorVisible="false"
-                android:textColor="#111111"
-                android:importantForAutofill="no" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvNumeros"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linearLayout" />
 
-        </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvNumeros"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@+id/finalizar_bilhete"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView9" />
-
-
-        <ImageButton
-            android:id="@+id/finalizar_bilhete"
-            android:layout_width="200dp"
-            android:layout_height="100dp"
-            android:background="@drawable/finalziar_bilhete"
-            android:scaleType="fitXY"
-            android:text="Finalizar Bilhete"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <TextView
             android:id="@+id/valorTotal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
             android:text="R$ 0,00"
             android:textColor="#D9711B"
             android:textSize="24sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rvNumeros" />
+            android:textStyle="bold" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageButton
+            android:id="@+id/finalizar_bilhete"
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/finalziar_bilhete"
+            android:contentDescription="Finalizar bilhete"
+            android:scaleType="fitXY" />
+    </LinearLayout>
 
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

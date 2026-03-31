@@ -18,6 +18,7 @@ import benicio.solucoes.rifacampeo.objects.ResultadoBilheteModel;
 import benicio.solucoes.rifacampeo.objects.RetornoModel;
 import benicio.solucoes.rifacampeo.objects.SaveBilheteResponse;
 import benicio.solucoes.rifacampeo.objects.VendedorModel;
+import benicio.solucoes.rifacampeo.objects.VersionModel;
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -32,6 +33,9 @@ import retrofit2.http.Query;
 
 public interface ApiService {
 
+
+    @GET("/")
+    Call<VersionModel> getVersion();
     @Multipart
     @POST("upload")
     Call<ResponseBody> uploadImagem(@Part MultipartBody.Part imagem);
