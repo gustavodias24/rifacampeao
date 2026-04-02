@@ -51,7 +51,13 @@ public class MenuAcvity extends AppCompatActivity {
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        verificarVersion();
+        mainBinding.imageButton.setOnClickListener(v -> {
+            Intent i = new Intent(this, DatasAnterioresSorteioActivity.class);
+            i.putExtra("remove", true);
+            startActivity(i);
+        });
+
+        mainBinding.imageButton2.setOnClickListener(v -> verificarVersion());
 
         prefs = getSharedPreferences("rprefs", MODE_PRIVATE);
         edt = prefs.edit();
@@ -137,7 +143,8 @@ public class MenuAcvity extends AppCompatActivity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MenuAcvity.this);
                     builder.setTitle("Atualização disponível");
                     builder.setMessage("Existe uma nova versão do aplicativo. Você precisa atualizar para continuar usando.");
-                    builder.setCancelable(false);
+//                    builder.setCancelable(false);
+                    builder.setNegativeButton("fechar", null);
                     builder.setPositiveButton("Atualizar", (dialog, which) -> {
                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                 Uri.parse("https://rifa.benicio-solucoes.com/"));
@@ -147,6 +154,8 @@ public class MenuAcvity extends AppCompatActivity {
                     updateDialog = builder.create();
                     updateDialog.setCanceledOnTouchOutside(false);
                     updateDialog.show();
+                }else{
+                    Toast.makeText(MenuAcvity.this, "Nenhuma atualização disponível!", Toast.LENGTH_SHORT).show();
                 }
             }
 

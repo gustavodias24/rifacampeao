@@ -12,72 +12,101 @@
         android:layout_height="wrap_content"
         android:padding="12dp">
 
-        <!-- Conteúdo (labels pequenos + valores) -->
         <LinearLayout
             android:id="@+id/boxContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/boxActions"
+            android:layout_toLeftOf="@+id/boxActions"
             android:orientation="vertical"
-            android:layout_toStartOf="@+id/btnDelete"
-            android:layout_toLeftOf="@+id/btnDelete"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true">
+            android:paddingEnd="8dp">
 
-            <!-- Loteria -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Loteria"
-                android:textSize="12sp"
-                android:textColor="#6B7280" />
+                android:textColor="#6B7280"
+                android:textSize="12sp" />
+
             <TextView
                 android:id="@+id/tvLoteria"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textStyle="bold"
+                android:text="-"
                 android:textSize="16sp"
-                android:text="-" />
+                android:textStyle="bold" />
 
-            <!-- Data -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="Data"
-                android:textSize="12sp"
-                android:textColor="#6B7280" />
+                android:textColor="#6B7280"
+                android:textSize="12sp" />
+
             <TextView
                 android:id="@+id/tvData"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="-"/>
+                android:text="-" />
 
-            <!-- Números -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="Números"
-                android:textSize="12sp"
-                android:textColor="#6B7280" />
+                android:textColor="#6B7280"
+                android:textSize="12sp" />
+
             <TextView
                 android:id="@+id/tvNumeros"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="00, 00, 00, 00, 00, 00" />
+                android:text="0000, 0000, 0000, 0000, 0000, 0000" />
         </LinearLayout>
 
-        <!-- Botão deletar -->
-        <ImageButton
-            android:id="@+id/btnDelete"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+        <LinearLayout
+            android:id="@+id/boxActions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:background="?android:selectableItemBackgroundBorderless"
-            android:contentDescription="Deletar"
-            android:padding="6dp"
-            android:tint="#DC2626"
-            android:src="@android:drawable/ic_menu_delete" />
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="Deletar"
+                android:padding="6dp"
+                android:src="@android:drawable/ic_menu_delete"
+                android:tint="#DC2626" />
+
+            <ImageButton
+                android:id="@+id/btnImprimir"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="6dp"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="Compartilhar WhatsApp"
+                android:padding="6dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/print" />
+
+            <ImageButton
+                android:id="@+id/btnPdf"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="6dp"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="Gerar PDF"
+                android:padding="6dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/pdf" />
+
+        </LinearLayout>
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

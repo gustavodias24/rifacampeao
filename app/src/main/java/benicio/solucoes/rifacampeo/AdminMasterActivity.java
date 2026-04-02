@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -80,7 +81,9 @@ public class AdminMasterActivity extends AppCompatActivity {
         mainBinding.btnAplicarFiltro.setOnClickListener(v -> aplicarFiltros());
         mainBinding.btnLimparFiltro.setOnClickListener(v -> limparFiltros());
 
-        atualizarLista();
+        //atualizarLista();
+
+        mainBinding.button13.setOnClickListener(v -> atualizarLista());
     }
 
     private void setupDatePicker(EditText target) {
@@ -105,6 +108,7 @@ public class AdminMasterActivity extends AppCompatActivity {
     }
 
     public void atualizarLista() {
+        Toast.makeText(this, "Buscando bilhetes...", Toast.LENGTH_SHORT).show();
         RetrofitUtils.getApiService().returnBilhetes(3, new QueryModelEmpty())
                 .enqueue(new Callback<List<BilheteModel>>() {
                     @SuppressLint("NotifyDataSetChanged")
