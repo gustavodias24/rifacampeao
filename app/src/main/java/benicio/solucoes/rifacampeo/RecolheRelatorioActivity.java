@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -50,8 +51,8 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
     private final List<RecolheuModel> listaFiltrada = new ArrayList<>();
     private AdapterRecolhimento adapterRecolhimento;
 
-    private final List<String> vendedoresSpinner = new ArrayList<>();
-    private final List<String> recolhedoresSpinner = new ArrayList<>();
+    private final List<String> vendedoresAutocomplete = new ArrayList<>();
+    private final List<String> recolhedoresAutocomplete = new ArrayList<>();
 
     private ArrayAdapter<String> vendedorAdapter;
     private ArrayAdapter<String> recolhedorAdapter;
@@ -82,7 +83,7 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
         });
 
         configurarRecyclerView();
-        configurarSpinners();
+        configurarAutocomplete();
         configurarDatas();
         configurarAcoes();
 
@@ -103,28 +104,48 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
         binding.rvBilhetes.setAdapter(adapterRecolhimento);
     }
 
-    private void configurarSpinners() {
-        vendedoresSpinner.clear();
-        vendedoresSpinner.add("Todos");
-
-        recolhedoresSpinner.clear();
-        recolhedoresSpinner.add("Todos");
+    private void configurarAutocomplete() {
+        vendedoresAutocomplete.clear();
+        recolhedoresAutocomplete.clear();
 
         vendedorAdapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_spinner_item,
-                vendedoresSpinner
+                android.R.layout.simple_dropdown_item_1line,
+                vendedoresAutocomplete
         );
-        vendedorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spNomeVendedor.setAdapter(vendedorAdapter);
 
         recolhedorAdapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_spinner_item,
-                recolhedoresSpinner
+                android.R.layout.simple_dropdown_item_1line,
+                recolhedoresAutocomplete
         );
-        recolhedorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        binding.spNomeVendedor.setAdapter(vendedorAdapter);
+        binding.spNomeVendedor.setThreshold(2);
+
         binding.spDocumentoVendedor.setAdapter(recolhedorAdapter);
+        binding.spDocumentoVendedor.setThreshold(2);
+
+        configurarRegraMinimo2Caracteres(binding.spNomeVendedor);
+        configurarRegraMinimo2Caracteres(binding.spDocumentoVendedor);
+    }
+
+    private void configurarRegraMinimo2Caracteres(AutoCompleteTextView autoCompleteTextView) {
+        autoCompleteTextView.setOnClickListener(v -> {
+            String texto = safe(autoCompleteTextView.getText().toString()).trim();
+            if (texto.length() >= 2) {
+                autoCompleteTextView.showDropDown();
+            }
+        });
+
+        autoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                String texto = safe(autoCompleteTextView.getText().toString()).trim();
+                if (texto.length() >= 2) {
+                    autoCompleteTextView.showDropDown();
+                }
+            }
+        });
     }
 
     private void configurarDatas() {
@@ -153,7 +174,6 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
                     public void onResponse(Call<List<VendedorModel>> call, Response<List<VendedorModel>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             LinkedHashSet<String> set = new LinkedHashSet<>();
-                            set.add("Todos");
 
                             for (VendedorModel vendedor : response.body()) {
                                 String nome = safe(vendedor.getNome()).trim();
@@ -162,8 +182,8 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
                                 }
                             }
 
-                            vendedoresSpinner.clear();
-                            vendedoresSpinner.addAll(set);
+                            vendedoresAutocomplete.clear();
+                            vendedoresAutocomplete.addAll(set);
                             vendedorAdapter.notifyDataSetChanged();
                         } else {
                             Toast.makeText(RecolheRelatorioActivity.this,
@@ -193,7 +213,7 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
                             listaCompleta.addAll(response.body().getItens());
                         }
 
-                        atualizarSpinnerRecolhedores(listaCompleta);
+                        atualizarAutocompleteRecolhedores(listaCompleta);
                         aplicarFiltros();
                     }
 
@@ -210,9 +230,8 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
                 });
     }
 
-    private void atualizarSpinnerRecolhedores(List<RecolheuModel> itens) {
+    private void atualizarAutocompleteRecolhedores(List<RecolheuModel> itens) {
         LinkedHashSet<String> set = new LinkedHashSet<>();
-        set.add("Todos");
 
         for (RecolheuModel item : itens) {
             String recolhedor = safe(item.getRecolhedor()).trim();
@@ -221,19 +240,16 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
             }
         }
 
-        recolhedoresSpinner.clear();
-        recolhedoresSpinner.addAll(set);
+        recolhedoresAutocomplete.clear();
+        recolhedoresAutocomplete.addAll(set);
         recolhedorAdapter.notifyDataSetChanged();
     }
 
     private void aplicarFiltros() {
-        String vendedorSelecionado = getSpinnerValue(binding.spNomeVendedor);
-        String recolhedorSelecionado = getSpinnerValue(binding.spDocumentoVendedor);
+        String vendedorSelecionado = getAutoCompleteValue(binding.spNomeVendedor);
+        String recolhedorSelecionado = getAutoCompleteValue(binding.spDocumentoVendedor);
         String dataInicio = emptyToNull(binding.edtDataInicio.getText().toString());
         String dataFim = emptyToNull(binding.edtDataFim.getText().toString());
-
-        if ("Todos".equalsIgnoreCase(vendedorSelecionado)) vendedorSelecionado = null;
-        if ("Todos".equalsIgnoreCase(recolhedorSelecionado)) recolhedorSelecionado = null;
 
         filtroAtualVendedor = vendedorSelecionado;
         filtroAtualRecolhedor = recolhedorSelecionado;
@@ -363,9 +379,12 @@ public class RecolheRelatorioActivity extends AppCompatActivity {
         return c.getTime();
     }
 
-    private String getSpinnerValue(android.widget.Spinner spinner) {
-        Object selected = spinner.getSelectedItem();
-        return selected == null ? null : selected.toString().trim();
+    private String getAutoCompleteValue(AutoCompleteTextView autoCompleteTextView) {
+        if (autoCompleteTextView == null || autoCompleteTextView.getText() == null) {
+            return null;
+        }
+        String texto = autoCompleteTextView.getText().toString().trim();
+        return texto.isEmpty() ? null : texto;
     }
 
     private String safe(String s) {

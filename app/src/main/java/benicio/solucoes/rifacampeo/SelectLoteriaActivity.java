@@ -57,6 +57,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
     float saldoVendedor = 0.0f;
 
     private SharedPreferences prefs;
+    private SharedPreferences prefs2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +70,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences("info", MODE_PRIVATE);
 
         prefs = getSharedPreferences("rprefs", MODE_PRIVATE);
+        prefs2 = getSharedPreferences("info", MODE_PRIVATE);
 
         selectLoteriaBinding.button7.setOnClickListener(v -> {
             if (limiteAposta <= somaBilhetes && saldoVendedor > 0) {
@@ -159,7 +161,7 @@ public class SelectLoteriaActivity extends AppCompatActivity {
 
                                             Log.d("buceta", "valorTotalGeradoDF: " + valorTotalGeradoDF + " valorTotalGeradoCOR: " + valorTotalGeradoCOR + " valorRecolhidoVendedor: " + valorRecolhidoVendedor);
                                             // Monta os textos
-                                            tvValorCoruja.setText(
+                                            tvValorCoruja.setText("\n\n" +prefs2.getString("nome_vendedor","")+"\n\n"+
                                                     "SALDO DE APOSTAS CORUJA: R$ " + nf.format(valorTotalGeradoCORLoteriaAtual) +
                                                             "\nSALDO DE APOSTAS FEDERAL: R$ " + nf.format(valorTotalGeradoDFLoteriaAtual) +
                                                     "\nTOTAL DE APOSTAS: R$ " + nf.format((valorTotalGeradoCORLoteriaAtual+valorTotalGeradoDFLoteriaAtual)));

@@ -60,6 +60,7 @@ public class VendedorModel {
         return new TotalRecolhimentoPagamento(totalRecolhido, totalPagamento);//- totalPago;
     }
 
+
     public Float getSaldoAtual(List<RecolheuModel> recolhimentos) {
         float comissaoValor = (getValor_bilhetes_gerados() * ((float) comissao / 100));
         TotalRecolhimentoPagamento totalRecolhimentoPagamento = calcularSaldoPorVendedor(recolhimentos);
@@ -68,13 +69,8 @@ public class VendedorModel {
 
         saldoRecolhido = (saldoRecolhido - saldoPagemento);
 
-        String TAG = "buceta";
-        Log.d(TAG,
-                "comissaoValor: " + comissaoValor
-                + " comissaoValor: " + comissaoValor
-                + " saldoPagemento: " + saldoPagemento
-                + " saldoRecolhido: " + saldoRecolhido
-                + " lista recolhimentos: " + recolhimentos.size());
+
+
         return (getValor_bilhetes_gerados() - comissaoValor) - saldoRecolhido;
     }
 
@@ -86,9 +82,23 @@ public class VendedorModel {
 
         saldoRecolhido = (saldoRecolhido - saldoPagemento);
 
-        String TAG = "buceta";
-        Log.d(TAG, "saldoRecolhido: " + saldoRecolhido + " lista recolhimentos: " + recolhimentos.size());
+        String TAG = "mayara";
+
         float saldoAtual = (getValor_bilhetes_gerados() - comissaoValor) - saldoRecolhido;
+
+        if ( getNome().contains("662")){
+            StringBuilder stringInfo = new StringBuilder();
+            stringInfo.append("Nome: ").append(getNome()).append("\n");
+            stringInfo.append("comissaoValor: ").append(comissaoValor).append("\n");
+            stringInfo.append("saldoPagemento: ").append(saldoPagemento).append("\n");
+            stringInfo.append("saldoRecolhido: ").append(saldoRecolhido).append("\n");
+            stringInfo.append("Bilhetes Gerado: ").append(getValor_bilhetes_gerados()).append("\n");
+            stringInfo.append("lista recolhimentos:: ").append(recolhimentos.size());
+
+
+            Log.d(TAG, stringInfo.toString());
+        }
+
 //        float comissaoGanha = (saldoTotal * comissao) / 100f;
 //        float saldo = saldoTotal - comissaoGanha;
 

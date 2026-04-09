@@ -345,6 +345,12 @@ public class MakeSorteioActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        valorTotalBilhete = 0;
+    }
+
     public static void atualizarPrecoBilhete(int addOrRemove) {
         if (addOrRemove == 1) valorTotalBilhete += valorDoBilhete;
         else valorTotalBilhete -= valorDoBilhete;
