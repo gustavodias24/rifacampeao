@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,7 +47,6 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        // extras safe (evita NullPointer)
         Bundle extras = getIntent() != null ? getIntent().getExtras() : null;
         if (extras != null) {
             nomeRecolhedor = extras.getString("recolhedor", "");
@@ -55,13 +55,11 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
 
         if (isRecolhedor) {
             mainBinding.rbPagamento.setVisibility(View.GONE);
-            // garante que o tipo seja recolhimento se você quiser:
             mainBinding.rbRecolhimento.setChecked(true);
         }
 
         Log.d("MakeRecolhimento", "nomeRecolhedor: " + nomeRecolhedor);
 
-        // Adapter do AutoCompleteTextView (use lista interna do adapter, evita bug de cache)
         adapterNomes = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_dropdown_item_1line,
@@ -71,12 +69,11 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
         mainBinding.edtVendedor.setAdapter(adapterNomes);
         mainBinding.edtVendedor.setThreshold(1);
 
-        // Carrega vendedores
         carregarVendedores();
 
-        // Preenche data/hora atual (compatível com Android 7)
         String agora = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR"))
                 .format(new Date());
+
         mainBinding.edtDataHora.setText(agora);
 
         mainBinding.btnConfirmar.setOnClickListener(v -> {
@@ -88,6 +85,32 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
                 return;
             }
 
+            if (nomes.isEmpty()) {
+                new AlertDialog.Builder(MakeRecolhimentoActivity.this)
+                        .setTitle("Atenção")
+                        .setMessage("A lista de vendedores ainda não foi carregada. Tente novamente.")
+                        .setPositiveButton("OK", null)
+                        .show();
+                return;
+            }
+
+            String vendedorEncontrado = encontrarNomeVendedorNaLista(vendedorTexto);
+
+            if (vendedorEncontrado == null) {
+                new AlertDialog.Builder(MakeRecolhimentoActivity.this)
+                        .setTitle("Vendedor não encontrado")
+                        .setMessage("O nome do vendedor informado não existe. Selecione um vendedor da lista.")
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            mainBinding.edtVendedor.requestFocus();
+                            mainBinding.edtVendedor.showDropDown();
+                        })
+                        .show();
+
+                return;
+            }
+
+            vendedorTexto = vendedorEncontrado;
+
             if (!isValorMonetarioValido(valorString)) {
                 Toast.makeText(this, "Valor inválido", Toast.LENGTH_SHORT).show();
                 return;
@@ -95,6 +118,7 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
 
             String normalizado = valorString.replace(",", ".");
             float valor;
+
             try {
                 valor = Float.parseFloat(normalizado);
             } catch (NumberFormatException e) {
@@ -103,7 +127,10 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
             }
 
             int tipo = mainBinding.rbRecolhimento.isChecked() ? 0 : 1;
-            if (isRecolhedor) tipo = 0; // se quiser forçar recolhedor sempre recolhimento
+
+            if (isRecolhedor) {
+                tipo = 0;
+            }
 
             RecolheuModel recolheuModelNovo = new RecolheuModel(
                     mainBinding.edtDataHora.getText().toString(),
@@ -118,6 +145,7 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
                     .setView(new ProgressBar(MakeRecolhimentoActivity.this))
                     .setCancelable(false)
                     .create();
+
             loadingDialog.show();
 
             RetrofitUtils.getApiService().salvar_recolhimento(recolheuModelNovo)
@@ -127,21 +155,31 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
                             loadingDialog.dismiss();
 
                             if (response.isSuccessful()) {
-                                Toast.makeText(MakeRecolhimentoActivity.this,
-                                        "Recolhimento Registrado", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(
+                                        MakeRecolhimentoActivity.this,
+                                        "Recolhimento Registrado",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
                                 finish();
                             } else {
-                                Toast.makeText(MakeRecolhimentoActivity.this,
+                                Toast.makeText(
+                                        MakeRecolhimentoActivity.this,
                                         "Erro ao registrar (código " + response.code() + ")",
-                                        Toast.LENGTH_SHORT).show();
+                                        Toast.LENGTH_SHORT
+                                ).show();
                             }
                         }
 
                         @Override
                         public void onFailure(Call<Void> call, Throwable throwable) {
                             loadingDialog.dismiss();
-                            Toast.makeText(MakeRecolhimentoActivity.this,
-                                    "Falha na conexão", Toast.LENGTH_SHORT).show();
+
+                            Toast.makeText(
+                                    MakeRecolhimentoActivity.this,
+                                    "Falha na conexão",
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
                     });
         });
@@ -151,51 +189,93 @@ public class MakeRecolhimentoActivity extends AppCompatActivity {
         RetrofitUtils.getApiService().returnVendedores(1, new QueryModelEmpty())
                 .enqueue(new Callback<List<VendedorModel>>() {
                     @Override
-                    public void onResponse(Call<List<VendedorModel>> call,
-                                           Response<List<VendedorModel>> response) {
+                    public void onResponse(
+                            Call<List<VendedorModel>> call,
+                            Response<List<VendedorModel>> response
+                    ) {
                         if (response.isSuccessful() && response.body() != null) {
 
                             vendedores.clear();
                             vendedores.addAll(response.body());
 
                             nomes.clear();
-                            for (VendedorModel v : vendedores) {
-                                String n = safe(v.getNome()).trim();
-                                if (!n.isEmpty()) nomes.add(n);
+
+                            for (VendedorModel vendedor : vendedores) {
+                                String nome = safe(vendedor.getNome()).trim();
+
+                                if (!nome.isEmpty()) {
+                                    nomes.add(nome);
+                                }
                             }
 
-                            // Atualiza o adapter do jeito certo (resolve “cache vazio”)
                             adapterNomes.clear();
                             adapterNomes.addAll(nomes);
                             adapterNomes.notifyDataSetChanged();
 
                         } else {
-                            Toast.makeText(MakeRecolhimentoActivity.this,
+                            Toast.makeText(
+                                    MakeRecolhimentoActivity.this,
                                     "Erro de conexão ao carregar vendedores",
-                                    Toast.LENGTH_SHORT).show();
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<VendedorModel>> call, Throwable t) {
-                        Toast.makeText(MakeRecolhimentoActivity.this,
-                                "Falha na API de vendedores", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                MakeRecolhimentoActivity.this,
+                                "Falha na API de vendedores",
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 });
     }
 
-    private String safe(String s) {
-        return (s == null) ? "" : s;
+    private String encontrarNomeVendedorNaLista(String textoDigitado) {
+        String textoDigitadoNormalizado = normalizarTexto(textoDigitado);
+
+        for (String nome : nomes) {
+            String nomeNormalizado = normalizarTexto(nome);
+
+            if (nomeNormalizado.equals(textoDigitadoNormalizado)) {
+                return nome;
+            }
+        }
+
+        return null;
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null) {
+            return "";
+        }
+
+        String textoLimpo = texto.trim().replaceAll("\\s+", " ");
+
+        String textoSemAcentos = Normalizer.normalize(textoLimpo, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+
+        return textoSemAcentos.toLowerCase(Locale.ROOT);
+    }
+
+    private String safe(String texto) {
+        return texto == null ? "" : texto;
     }
 
     private boolean isValorMonetarioValido(String texto) {
-        if (texto == null) return false;
+        if (texto == null) {
+            return false;
+        }
 
         texto = texto.trim();
-        if (texto.isEmpty()) return false;
 
-        // 1+ dígitos, opcionalmente separador + 1-2 dígitos
+        if (texto.isEmpty()) {
+            return false;
+        }
+
         String regex = "^[0-9]+([.,][0-9]{1,2})?$";
+
         return texto.matches(regex);
     }
 }
